@@ -1,0 +1,141 @@
+== BUILDBUSINESSLK SME ADVISOR KNOWLEDGE BASE ==
+
+Purpose:
+This file supports Sri Lankan small and medium entrepreneurs who want practical business recommendations for coconut, palmyrah, and kithul sectors. The assistant should answer in English unless the user asks for another language. The assistant should understand local names: pol means coconut, thal means palmyrah, and kithul means kithul.
+
+Core recommendation logic:
+Recommend a business idea only after considering raw material availability, starting budget, skill level, shelf life, food safety risk, packaging needs, local demand, online selling potential, tourist demand, export readiness, and ability to repeat production consistently.
+
+Low-budget product logic:
+For very small budgets, prefer products with simple tools, local raw materials, short learning cycles, and direct selling potential. Examples include coconut sambol packs for local stores, coconut shell crafts, coconut-based sweets, palmyrah tuber flour mixes, panattu snacks, kithul treacle gift packs, and kithul jaggery retail packs.
+
+Medium-budget product logic:
+For medium budgets, prefer products that need better packaging, branding, quality control, and small equipment but can earn higher margins. Examples include virgin coconut oil, coconut milk products, desiccated coconut, coconut flour, coconut water, palmyrah pulp drinks, palmyrah jam, kithul treacle bottling, kithul jaggery cubes, and natural sweetener gift boxes.
+
+Higher-readiness product logic:
+For export or premium supermarket readiness, recommend products with stable quality, clean labeling, batch tracking, moisture control, food-safe packaging, shelf-life testing, and consistent supply. Examples include virgin coconut oil, coconut milk powder, coconut flour, activated carbon supply partnerships, kithul treacle, kithul jaggery, palmyrah pulp products, and palmyrah-based snack packs.
+
+Recommendation answer structure:
+Start with the strongest recommendation, explain why it fits, give actions for the next 7 days, give simple marketing ideas, list risks and quality checks, then ask follow-up questions about district, budget, raw material access, production capacity, and target customer.
+
+Continuous guidance logic:
+For ongoing support, suggest a weekly cycle: collect customer feedback, check raw material price, track cost per unit, test one marketing message, improve packaging, record sales, and decide whether to repeat, stop, or change the product.
+
+Free tools entrepreneurs can use:
+Use WhatsApp Business for catalog and repeat orders. Use Facebook Pages and Facebook Marketplace for local reach. Use TikTok and Instagram Reels for short product videos. Use Google Business Profile for local discovery. Use Canva free version for labels and posts. Use Google Sheets for cost tracking and stock control. Use free QR codes for product pages, menus, or order forms. Use public websites of Sri Lankan government authorities and export bodies to verify regulations and market information.
+
+Compliance and quality warnings:
+Do not recommend selling food products without attention to hygiene, clean water, safe storage, labeling, and expiry dates. For packaged foods, the entrepreneur should verify local food registration, labeling, barcode, tax, and export requirements with the correct Sri Lankan authorities before scaling. Do not invent license numbers or certification requirements.
+
+== COCONUT / POL SME PLAYBOOK ==
+
+Sector keywords:
+coconut, pol, king coconut, coconut oil, virgin coconut oil, VCO, coconut milk, coconut cream, desiccated coconut, coconut flour, coconut water, coir, coco peat, shell charcoal, activated carbon, coconut shell crafts, poonac, copra.
+
+Best opportunities for Sri Lankan SMEs:
+Coconut milk, coconut cream, coconut water, coconut flour, coconut sugar, treacle and syrup, coconut amino, and virgin coconut oil show stronger value-added potential than selling only raw nuts. Coconut shell and coir products can create extra income from by-products. Moulded coir products for horticulture have export relevance, but they need better processing and buyer relationships.
+
+Low-budget coconut ideas:
+1. Coconut shell craft items for tourists, gift shops, online stores, and hotel souvenir corners.
+2. Fresh coconut and king coconut direct supply to local shops, juice bars, tourist areas, and events.
+3. Coconut-based sweets, snacks, and home bakery ingredients sold through WhatsApp and Facebook.
+4. Small coir or coconut fiber products if raw husk supply is available.
+
+Medium-budget coconut ideas:
+1. Virgin coconut oil with clean glass bottles, batch labels, and health-focused branding.
+2. Coconut flour for health-conscious consumers, bakeries, diabetic-friendly recipes, and gluten-free markets.
+3. Coconut milk or coconut cream for local restaurants, cloud kitchens, and small grocery shops.
+4. Coconut water bottling only if hygiene, shelf life, and cold-chain handling can be controlled.
+
+Marketing ideas for coconut SMEs:
+Show the origin story, village production, freshness, and natural process. Create recipe videos for coconut milk, coconut flour, coconut oil, and coconut water. Offer subscription delivery for households, restaurants, and small cafes. Bundle products as "Sri Lankan pol wellness pack", "home cooking pack", or "tourist gift pack". Use before-after content for coconut oil skin or hair use only without making medical claims.
+
+Coconut risk checks:
+Coconut oil quality can be damaged by poor drying, dirty equipment, moisture, and storage heat. Coconut milk and coconut water have higher food safety and shelf-life risks. Export products require consistent quality, documentation, and packaging. Price volatility can reduce margins, so track raw nut and oil prices weekly.
+
+Best answer pattern for coconut questions:
+If the user asks what business to start, recommend based on budget and access to nuts. If budget is low, suggest direct sales, crafts, or small food products. If budget is medium, suggest VCO, coconut flour, coconut milk, or restaurant supply. If export-focused, suggest premium VCO, coconut flour, coconut milk powder partnerships, or coir products.
+
+== PALMYRAH / THAL SME PLAYBOOK ==
+
+Sector keywords:
+palmyrah, thal, palm, palmyrah fruit, pulp, panattu, spiced panattu, palmyrah jaggery, palmyrah treacle, palm candy, odiyal, pulukkodiyal flour, dried tuber flour, palm posha, odiyal kool, palm crush, palakaram, Jaffna, Northern Province, Eastern Province.
+
+Best opportunities for Sri Lankan SMEs:
+Palmyrah is strongly linked with Northern and Eastern identity, especially Jaffna. It can be positioned as a heritage, natural, regional, and diaspora-friendly product. Good SME opportunities include palmyrah pulp drinks, panattu snacks, spiced panattu, palmyrah jam, jaggery, tuber flour, odiyal kool packs, and gift packs for Sri Lankan diaspora customers.
+
+Low-budget palmyrah ideas:
+1. Panattu and spiced panattu snack packs for local shops, school canteens where allowed, tourist stores, and online orders.
+2. Odiyal flour or odiyal kool mix in small labeled packs.
+3. Palmyrah sweets and palakaram packs for festivals, local events, and diaspora gift boxes.
+4. Palmyrah story-based gift hampers with small quantities of multiple products.
+
+Medium-budget palmyrah ideas:
+1. Palmyrah fruit pulp drinks with improved packaging and cold-chain planning.
+2. Palmyrah jam and fruit spread using clean jars and consistent recipes.
+3. Palmyrah jaggery and treacle with premium natural sweetener branding.
+4. Tuber flour products positioned for traditional food, health-conscious customers, and regional cuisine.
+
+Marketing ideas for palmyrah SMEs:
+Use the words thal, Jaffna, Northern heritage, natural palm, traditional food, and diaspora gift when relevant. Share short videos of traditional preparation, product uses, and customer recipes. Sell through WhatsApp groups, Facebook community groups, Tamil diaspora networks, local fairs, guest houses, and tourism-linked shops. Create festival bundles for New Year, Deepavali, Christmas, and wedding gift packs.
+
+Palmyrah risk checks:
+Palmyrah product supply may vary by district and season. Some data shows large plant population fluctuations, so entrepreneurs should verify local raw material supply before investing. Food products need hygiene, moisture control, packaging, and shelf-life testing. Drinks and pulp products have higher spoilage risk than dried products.
+
+Best answer pattern for palmyrah questions:
+If the user has low budget, suggest panattu, flour mixes, small sweet packs, and local gift packs. If the user has access to pulp and refrigeration, suggest drinks or jam. If the user wants diaspora or tourist markets, suggest heritage-branded gift packs and clear English/Tamil/Sinhala labeling.
+
+== KITHUL SME PLAYBOOK ==
+
+Sector keywords:
+kithul, kithul treacle, kithul jaggery, palm treacle, natural sweetener, syrup, hakuru, jaggery cubes, premium sweetener, forest garden, smallholder tapping.
+
+Best opportunities for Sri Lankan SMEs:
+Kithul is a niche, premium Sri Lankan natural sweetener. Strong opportunities include kithul treacle bottles, jaggery cubes, jaggery powder, gift packs, dessert toppings, cafe supply, hotel supply, and wellness-oriented natural sweetener branding. Kithul can be positioned above ordinary sugar because it has cultural value, taste, and premium gifting potential.
+
+Low-budget kithul ideas:
+1. Repacking verified quality kithul jaggery into clean small packs with proper labels.
+2. Kithul treacle gift bottles for local customers, tourists, and Sri Lankan gift boxes.
+3. Kithul recipe content and direct sales through WhatsApp, Facebook, and local fairs.
+4. Small bundles with tea, coconut snacks, or local sweets.
+
+Medium-budget kithul ideas:
+1. Premium kithul treacle with glass bottles, tamper seals, batch numbers, and story labels.
+2. Jaggery cubes or powder for cafes, bakeries, dessert shops, and health-focused stores.
+3. Kithul dessert kits for curd, pancakes, waffles, ice cream, and Sri Lankan sweet dishes.
+4. Hotel and restaurant supply with consistent bottle sizes and invoice records.
+
+Marketing ideas for kithul SMEs:
+Show product thickness, color, natural origin, and use cases. Make videos for curd and kithul, kithul pancakes, kithul coffee, desserts, and gift packs. Target cafes, hotels, Ayurveda/wellness shops, tourist stores, and Sri Lankan diaspora buyers. Use premium packaging because kithul buyers often care about trust and authenticity.
+
+Kithul risk checks:
+Adulteration and inconsistent quality are major trust problems. Entrepreneurs should build credibility with supplier records, batch numbers, consistent taste, clean bottles, and honest labeling. Moisture and storage affect jaggery quality. Export or supermarket sales require verified labeling and compliance.
+
+Best answer pattern for kithul questions:
+If the user wants quick start, recommend small treacle or jaggery packs with trust-focused branding. If the user wants premium growth, recommend hotel/cafe supply and gift packs. If the user asks about marketing, focus on authenticity, natural sweetener positioning, recipes, and trust-building.
+
+== CROSS-SECTOR BUSINESS DECISION RULES ==
+
+When raw material access is strong:
+Recommend processing and branded products instead of raw selling. Ask how many units can be supplied weekly and whether quality is consistent.
+
+When budget is low:
+Recommend simple packaged products, pre-orders, direct selling, WhatsApp catalogs, social media content, and local shop partnerships. Avoid machinery-heavy ideas.
+
+When the entrepreneur is in a tourist area:
+Recommend gift packs, story labels, small bottles, craft products, tasting samples, hotel partnerships, and multilingual labels.
+
+When the entrepreneur wants export:
+Recommend starting with diaspora channels, export-ready packaging, quality documentation, consistent batches, and market validation before large investment. Tell them to verify export rules using official sources.
+
+When the entrepreneur asks for marketing:
+Give a 30-day free marketing plan: post short videos, customer testimonials, product use cases, founder story, process videos, WhatsApp catalog, Facebook Marketplace listings, local shop samples, and weekly offer bundles.
+
+When the entrepreneur asks for pricing:
+Explain cost-plus pricing: raw material cost + packaging + labor + transport + wastage + platform fees + desired profit. Suggest comparing with local competitors and testing two price points. Do not invent exact current market prices unless provided in retrieved data or live web context.
+
+When the entrepreneur asks for business growth:
+Recommend improving one thing at a time: product quality, packaging, repeat orders, shop partnerships, online content, customer database, production capacity, and documentation.
+
+When the entrepreneur asks for best sector:
+Coconut has broader product variety and larger market data. Palmyrah has strong regional and heritage positioning. Kithul has premium natural sweetener potential. The best choice depends on raw material access, district, budget, skills, and target customers.
