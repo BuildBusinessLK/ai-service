@@ -1,5 +1,6 @@
 import importlib
 import os
+import re
 
 # The API should run fully free/local after `rag/ingest.py` has downloaded
 # the embedding model and rebuilt the FAISS index.
@@ -15,8 +16,69 @@ from langchain_core.output_parsers import StrOutputParser
 DB_PATH = "rag/vectorstore"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
-ENABLE_WEB_SEARCH = os.getenv("ENABLE_WEB_SEARCH", "true").lower() == "true"
+ENABLE_WEB_SEARCH = os.getenv("ENABLE_WEB_SEARCH", "false").lower() == "true"
 WEB_SEARCH_LIMIT = int(os.getenv("WEB_SEARCH_LIMIT", "3"))
+
+SUPPORTED_SECTORS = {
+    "coconut": ("coconut", "pol", "coco", "copra", "coir"),
+    "palmyrah": ("palmyrah", "thal", "palmyra"),
+    "kithul": ("kithul", "kitul"),
+}
+
+KNOWN_UNSUPPORTED_TERMS = (
+    "rubber",
+    "tea",
+    "coffee",
+    "cinnamon",
+    "pepper",
+    "rice",
+    "paddy",
+    "spice",
+    "spices",
+)
+
+
+def _get_supported_sectors(question: str) -> list[str]:
+    normalized_question = question.lower()
+    return [
+        sector
+        for sector, keywords in SUPPORTED_SECTORS.items()
+        if any(keyword in normalized_question for keyword in keywords)
+    ]
+
+
+def _get_unsupported_terms(question: str) -> list[str]:
+    normalized_question = question.lower()
+    return [
+        term
+        for term in KNOWN_UNSUPPORTED_TERMS
+        if re.search(rf"\b{re.escape(term)}\b", normalized_question)
+    ]
+
+
+def _unsupported_dataset_message(unsupported_terms: list[str] | None = None) -> str:
+    topic = ", ".join(unsupported_terms) if unsupported_terms else "that sector"
+    return (
+        "Sorry, at the moment BuildBusinessLK only has verified data for coconut "
+        "(pol), thal/palmyrah, and kithul. We do not have enough dataset coverage "
+        f"to answer about {topic} yet. We will request this dataset from admins "
+        "and support these answers very soon. Right now, I can help you with "
+        "coconut, thal/palmyrah, or kithul business questions."
+    )
+
+
+def _domain_notice(unsupported_terms: list[str]) -> str:
+    if not unsupported_terms:
+        return "The user asked only about supported sectors."
+
+    return (
+        "The user also asked about unsupported sectors: "
+        f"{', '.join(unsupported_terms)}. Do not provide recommendations, product "
+        "lists, pricing, market claims, or web-based guesses for those sectors. "
+        "Briefly say BuildBusinessLK currently has verified data only for coconut "
+        "(pol), thal/palmyrah, and kithul, and that the missing dataset will be "
+        "requested from admins soon. Answer only the supported part of the question."
+    )
 
 
 def _question_needs_web_search(question: str) -> bool:
@@ -26,22 +88,24 @@ def _question_needs_web_search(question: str) -> bool:
         "today",
         "recent",
         "trend",
-        "market",
         "price",
         "export",
         "buyer",
         "competitor",
-        "marketing",
-        "social media",
-        "online",
-        "web",
     )
     normalized_question = question.lower()
-    return any(keyword in normalized_question for keyword in keywords)
+    has_supported_sector = bool(_get_supported_sectors(question))
+    has_unsupported_sector = bool(_get_unsupported_terms(question))
+    return (
+        ENABLE_WEB_SEARCH
+        and has_supported_sector
+        and not has_unsupported_sector
+        and any(keyword in normalized_question for keyword in keywords)
+    )
 
 
 def _search_web(question: str) -> str:
-    if not ENABLE_WEB_SEARCH or not _question_needs_web_search(question):
+    if not _question_needs_web_search(question):
         return "No live web search was used for this answer."
 
     try:
@@ -112,6 +176,16 @@ class SMEAdvisorChain:
     def invoke(self, inputs):
         question = inputs["input"]
         chat_history = _format_chat_history(inputs.get("chat_history", []))
+        supported_sectors = _get_supported_sectors(question)
+        unsupported_terms = _get_unsupported_terms(question)
+
+        if not supported_sectors:
+            return {
+                "answer": _unsupported_dataset_message(unsupported_terms),
+                "context": [],
+                "web_context": "No live web search was used for this answer.",
+            }
+
         documents = self.retriever.invoke(question)
         context = _format_documents(documents)
         web_context = _search_web(question)
@@ -120,6 +194,7 @@ class SMEAdvisorChain:
                 "context": context,
                 "web_context": web_context,
                 "chat_history": chat_history,
+                "domain_notice": _domain_notice(unsupported_terms),
                 "input": question,
             }
         )
@@ -160,7 +235,9 @@ Answer in clear English. Do not force Sinhala output. Understand local product n
 - thal = palmyrah
 - kithul = kithul
 
-Use the local knowledge base first. Use live web context only as supporting information when it is provided.
+BuildBusinessLK currently has verified data only for coconut/pol, thal/palmyrah, and kithul.
+If the user asks about any other sector or product, do not guess and do not use generic web knowledge. Politely say that dataset is not available yet, updates are on the way, and the dataset will be requested from admins soon.
+Use the local knowledge base first. Use live web context only as supporting information when it is provided, and never use it to answer unsupported sectors.
 Focus on Sri Lankan SME reality: low budget, local raw materials, village-level producers, small shops, online sellers, cooperatives, export readiness, food safety, packaging, pricing, and repeat customers.
 
 When giving recommendations:
@@ -172,6 +249,9 @@ When giving recommendations:
 6. If the question is vague, give useful guidance and ask 1-3 follow-up questions.
 
 Do not invent exact prices, laws, certifications, grants, or export requirements. If the data is missing or outdated, say so and suggest how to verify it.
+
+Domain guard:
+{domain_notice}
 
 Local knowledge:
 {context}
