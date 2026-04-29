@@ -90,6 +90,20 @@ def _format_documents(documents) -> str:
     return "\n\n---\n\n".join(formatted_docs)
 
 
+def _format_chat_history(chat_history) -> str:
+    if not chat_history:
+        return "No previous messages in this conversation."
+
+    formatted_messages = []
+    for message in chat_history:
+        role = message.get("role", "user")
+        content = message.get("content", "")
+        if content:
+            formatted_messages.append(f"{role}: {content}")
+
+    return "\n".join(formatted_messages) or "No previous messages in this conversation."
+
+
 class SMEAdvisorChain:
     def __init__(self, retriever, llm, prompt):
         self.retriever = retriever
@@ -97,6 +111,7 @@ class SMEAdvisorChain:
 
     def invoke(self, inputs):
         question = inputs["input"]
+        chat_history = _format_chat_history(inputs.get("chat_history", []))
         documents = self.retriever.invoke(question)
         context = _format_documents(documents)
         web_context = _search_web(question)
@@ -104,6 +119,7 @@ class SMEAdvisorChain:
             {
                 "context": context,
                 "web_context": web_context,
+                "chat_history": chat_history,
                 "input": question,
             }
         )
@@ -162,6 +178,11 @@ Local knowledge:
 
 Live web context:
 {web_context}
+
+Conversation so far:
+{chat_history}
+
+Use the conversation so far to remember details the user already gave. If important details are missing, ask a clear follow-up question and keep the conversation moving.
 """
 
     prompt = ChatPromptTemplate.from_messages(
