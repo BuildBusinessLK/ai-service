@@ -1,7 +1,10 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from rag.query import get_qa_chain
 from typing import List, Optional
+
+load_dotenv()
 
 app = FastAPI()
 

@@ -4,9 +4,9 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
-DATA_PATH = "data/"
-DB_PATH = "rag/vectorstore"
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+DATA_PATH = os.getenv("DATA_PATH", "data/")
+DB_PATH = os.getenv("VECTORSTORE_PATH", "rag/vectorstore")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 
 def load_documents():
     docs = []
