@@ -10,10 +10,11 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM
 
 def load_documents():
     docs = []
-    for file in sorted(os.listdir(DATA_PATH)):
-        if file.endswith(".txt"):
-            loader = TextLoader(os.path.join(DATA_PATH, file), encoding="utf-8")
-            docs.extend(loader.load())
+    for root, _, files in os.walk(DATA_PATH):
+        for file in sorted(files):
+            if file.endswith(".txt"):
+                loader = TextLoader(os.path.join(root, file), encoding="utf-8")
+                docs.extend(loader.load())
     return docs
 
 def split_documents(documents):

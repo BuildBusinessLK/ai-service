@@ -19,12 +19,18 @@ class Query(BaseModel):
     conversation_id: Optional[str] = None
     chat_history: List[ChatMessage] = Field(default_factory=list)
 
+def _message_to_dict(message: ChatMessage) -> dict:
+    if hasattr(message, "model_dump"):
+        return message.model_dump()
+    return message.dict()
+
+
 @app.post("/ask")
 def ask(query: Query):
     result = qa_chain.invoke(
         {
             "input": query.question,
-            "chat_history": [message.dict() for message in query.chat_history],
+            "chat_history": [_message_to_dict(m) for m in query.chat_history],
         }
     )
     return {"answer": result["answer"]}

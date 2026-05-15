@@ -10,7 +10,8 @@ The system consists of a **Spring Boot** gateway and a **Python FastAPI** AI eng
 ```text
 BuildBusinessLK/
 ├── ai-service/ (Python - FastAPI)
-│   ├── data/                 # Knowledge Base (.txt files)
+│   ├── data/                 # Knowledge Base (.txt files + optional _scraped/)
+│   ├── scripts/              # Optional fetch helpers for public portals
 │   ├── rag/                  # RAG Implementation
 │   │   ├── ingest.py         # Converts text to Vector Embeddings
 │   │   ├── query.py          # Handles Retrieval & LLM Generation
@@ -31,21 +32,38 @@ BuildBusinessLK/
 - **LLM**: Ollama (`llama3`)
 - **Communication**: RestTemplate (Java to Python)
 
-## 4. Data Conversion & Access
-The AI uses a "Flat File Retrieval" strategy:
-1. **Categorization**: Data is grouped into domain-specific text files (`coconut.txt`, `prices.txt`, etc.).
-2. **Standardization**: Raw info is converted to structured UTF-8 `.txt` files to ensure character compatibility and clean parsing by LangChain's `TextLoader`.
-3. **Vectorization**: `ingest.py` splits these files into 1000-character chunks with a 200-character overlap, allowing the AI to find relevant context without losing meaning.
+## 4. Data conversion & access
+The AI uses flat-file retrieval from UTF-8 `.txt` files under `data/` (including subfolders such as `data/_scraped/`).
 
-## 5. System Workflow
-1. **User Request**: User sends a JSON request to the Spring Boot `/ask` endpoint.
-2. **Inter-Service Call**: Spring Boot forwards the request to the FastAPI engine.
-3. **Retrieval**: LangChain searches the FAISS index to find the top 3 most relevant context chunks from the `.txt` data.
-4. **Generation**: The relevant context + user question is sent to the local **Llama3** model.
-5. **Structured Response**: The final answer is wrapped in a JSON body (Success flag + Code + Answer) and returned to the user.
+1. **Categorization**: Domain files like `coconut.txt`, `kithul.txt`, `official_sources_lk_institutions.txt`, etc.
+2. **Standardization**: Structured UTF-8 for LangChain `TextLoader`.
+3. **Vectorization**: `ingest.py` splits into ~800-character chunks with ~120 overlap.
+4. **Rebuild after edits**: run `python rag/ingest.py` so FAISS matches the new text.
 
-## 6. Next Steps for Improvement
-*   **Data Expansion**: Integrate PDF loaders and direct Database connectors for real-time market data.
-*   **Hybrid Search**: Combine Vector Search with Keyword (BM25) search to improve accuracy for specific terminology.
-*   **Agentic Orchestration**: Use LangGraph or LangChain Agents to allow the AI to decide when to call external Price APIs vs. searching the static knowledge base.
-*   **Query Refinement**: Implement a "re-ranking" step to ensure the most relevant documents are prioritized before passing to the LLM.
+Optional **live web snippets** for keywords like `latest`, `price`, `export` (see `rag/query.py`): set `ENABLE_WEB_SEARCH=true` in `.env` (uses the `ddgs` package).
+
+Optional **HTML fetch** for official sites (EDB, CDA, PDB, KDB):
+
+```bash
+pip install -r requirements.txt
+python scripts/fetch_lk_institution_pages.py
+python rag/ingest.py
+```
+
+Respect each site's terms and robots rules; treat this as an occasional refresh, not a hammer.
+
+## 5. SME advisor behaviour
+The prompt in `rag/query.py` tells the model to synthesize answers from the knowledge base (and optional web context), avoid homework-style commands (“do market research”) without concrete sector findings, present options with **Pros/Cons** when useful, and ask short clarifying questions when user inputs are vague.
+
+## 6. System workflow
+1. **User request**: JSON to Spring Boot `/ask` (question + `conversationId`). Chat history is stored in the DB and replayed to Python.
+2. **Inter-service call**: Spring posts to FastAPI `POST /ask`.
+3. **Retrieval**: FAISS MMR over local embeddings (see `k` / `fetch_k` in `rag/query.py`).
+4. **Generation**: **Ollama `llama3`** (or `OLLAMA_MODEL` override) with the SME system prompt.
+5. **UI**: Assistant replies are rendered with paragraphs/lists/bold via `frontend/src/utils/assistantTextFormat.jsx`.
+
+## 7. Next steps for improvement
+* Dataset expansion (PDFs, internal DBs, verified price feeds).
+* Hybrid search (BM25 + vectors) for HS codes and product names.
+* Fine-tuning or LoRA on Sri Lankan SME dialogues (beyond RAG + prompt).
+* Agent orchestration for authenticated APIs instead of generic web snippets.

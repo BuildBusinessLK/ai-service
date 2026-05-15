@@ -8,3 +8,5 @@ faiss-cpu
 sentence-transformers
 ddgs
 python-dotenv
+requests
+beautifulsoup4
