@@ -18,6 +18,8 @@ class Query(BaseModel):
     question: str
     conversation_id: Optional[str] = None
     chat_history: List[ChatMessage] = Field(default_factory=list)
+    user_context: Optional[str] = None
+
 
 def _message_to_dict(message: ChatMessage) -> dict:
     if hasattr(message, "model_dump"):
@@ -31,6 +33,7 @@ def ask(query: Query):
         {
             "input": query.question,
             "chat_history": [_message_to_dict(m) for m in query.chat_history],
+            "user_context": (query.user_context or "").strip(),
         }
     )
     return {"answer": result["answer"]}

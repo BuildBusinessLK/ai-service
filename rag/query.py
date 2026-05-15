@@ -186,6 +186,10 @@ class SMEAdvisorChain:
                 "web_context": "No live web search was used for this answer.",
             }
 
+        user_context = inputs.get("user_context") or ""
+        if not str(user_context).strip():
+            user_context = "No registered user profile context was provided."
+
         documents = self.retriever.invoke(question)
         context = _format_documents(documents)
         web_context = _search_web(question)
@@ -195,6 +199,7 @@ class SMEAdvisorChain:
                 "web_context": web_context,
                 "chat_history": chat_history,
                 "domain_notice": _domain_notice(unsupported_terms),
+                "user_context": user_context,
                 "input": question,
             }
         )
@@ -234,6 +239,9 @@ palmyrah/thal, and kithul value chains.
 Language & names:
 - Answer in clear English. Local names: pol=coconut, thal=palmyrah, kithul=kitul.
 - Do not output Markdown headings with # symbols. You may use **bold** and *emphasis* sparingly for key terms only.
+
+Registered user profile (BuildBusinessLK workspace — use only to personalize tone and relevant examples; never invent facts or numbers not supported by Local knowledge / Live web context / this block):
+{user_context}
 
 Your job (not the user's homework):
 - YOU synthesize market and sector insight from the Local knowledge and Live web context sections below.
