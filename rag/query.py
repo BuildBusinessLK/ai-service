@@ -1,9 +1,7 @@
-import importlib
 import os
 import re
 
-# The API should run fully free/local after `rag/ingest.py` has downloaded
-# the embedding model and rebuilt the FAISS index.
+# Keep HuggingFace in offline mode once ingested — no live model downloads during inference.
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
@@ -16,8 +14,10 @@ from langchain_core.output_parsers import StrOutputParser
 DB_PATH = os.getenv("VECTORSTORE_PATH", "rag/vectorstore")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
-ENABLE_WEB_SEARCH = os.getenv("ENABLE_WEB_SEARCH", "false").lower() == "true"
-WEB_SEARCH_LIMIT = int(os.getenv("WEB_SEARCH_LIMIT", "3"))
+
+# ──────────────────────────────────────────────
+# Domain guard
+# ──────────────────────────────────────────────
 
 SUPPORTED_SECTORS = {
     "coconut": ("coconut", "pol", "coco", "copra", "coir"),
@@ -26,191 +26,170 @@ SUPPORTED_SECTORS = {
 }
 
 KNOWN_UNSUPPORTED_TERMS = (
-    "rubber",
-    "tea",
-    "coffee",
-    "cinnamon",
-    "pepper",
-    "rice",
-    "paddy",
-    "spice",
-    "spices",
+    "rubber", "tea", "coffee", "cinnamon", "pepper",
+    "rice", "paddy", "spice", "spices",
 )
 
 
 def _get_supported_sectors(question: str) -> list[str]:
-    normalized_question = question.lower()
+    normalized = question.lower()
     return [
         sector
         for sector, keywords in SUPPORTED_SECTORS.items()
-        if any(keyword in normalized_question for keyword in keywords)
+        if any(kw in normalized for kw in keywords)
     ]
 
 
 def _get_unsupported_terms(question: str) -> list[str]:
-    normalized_question = question.lower()
+    normalized = question.lower()
     return [
         term
         for term in KNOWN_UNSUPPORTED_TERMS
-        if re.search(rf"\b{re.escape(term)}\b", normalized_question)
+        if re.search(rf"\b{re.escape(term)}\b", normalized)
     ]
 
 
-def _unsupported_dataset_message(unsupported_terms: list[str] | None = None) -> str:
-    topic = ", ".join(unsupported_terms) if unsupported_terms else "that sector"
+def _unsupported_message(terms: list[str] | None = None) -> str:
+    topic = ", ".join(terms) if terms else "that sector"
     return (
-        "Sorry, at the moment BuildBusinessLK only has verified data for coconut "
-        "(pol), thal/palmyrah, and kithul. We do not have enough dataset coverage "
-        f"to answer about {topic} yet. We will request this dataset from admins "
-        "and support these answers very soon. Right now, I can help you with "
-        "coconut, thal/palmyrah, or kithul business questions."
+        "Sorry — BuildBusinessLK currently has verified data only for coconut (pol), "
+        "palmyrah/thal, and kithul. We do not have enough dataset coverage to answer about "
+        f"{topic} yet. I will flag this to the team so we can add that data soon. "
+        "In the meantime, I am happy to help with coconut, palmyrah, or kithul questions."
     )
 
 
 def _domain_notice(unsupported_terms: list[str]) -> str:
     if not unsupported_terms:
         return "The user asked only about supported sectors."
-
     return (
-        "The user also asked about unsupported sectors: "
-        f"{', '.join(unsupported_terms)}. Do not provide recommendations, product "
-        "lists, pricing, market claims, or web-based guesses for those sectors. "
-        "Briefly say BuildBusinessLK currently has verified data only for coconut "
-        "(pol), thal/palmyrah, and kithul, and that the missing dataset will be "
-        "requested from admins soon. Answer only the supported part of the question."
+        f"The user also asked about unsupported sectors: {', '.join(unsupported_terms)}. "
+        "Do NOT provide recommendations, prices, market claims, or guesses for those sectors. "
+        "Briefly acknowledge the gap and redirect. Answer only the supported part."
     )
 
 
-def _question_needs_web_search(question: str) -> bool:
-    keywords = (
-        "latest",
-        "current",
-        "today",
-        "recent",
-        "trend",
-        "price",
-        "export",
-        "buyer",
-        "competitor",
-    )
-    normalized_question = question.lower()
-    has_supported_sector = bool(_get_supported_sectors(question))
-    has_unsupported_sector = bool(_get_unsupported_terms(question))
-    return (
-        ENABLE_WEB_SEARCH
-        and has_supported_sector
-        and not has_unsupported_sector
-        and any(keyword in normalized_question for keyword in keywords)
-    )
-
-
-def _search_web(question: str) -> str:
-    if not _question_needs_web_search(question):
-        return "No live web search was used for this answer."
-
-    try:
-        search_module = importlib.import_module("ddgs")
-    except ImportError:
-        return (
-            "Live web search is available only after installing the free "
-            "`ddgs` package from requirements.txt."
-        )
-
-    DDGS = search_module.DDGS
-
-    search_query = (
-        f"{question} Sri Lanka SME coconut palmyrah kithul business "
-        "marketing export agriculture"
-    )
-
-    try:
-        with DDGS() as ddgs:
-            results = list(ddgs.text(search_query, max_results=WEB_SEARCH_LIMIT))
-    except Exception as exc:
-        return f"Live web search failed, so only local knowledge was used. Error: {exc}"
-
-    if not results:
-        return "Live web search returned no useful results."
-
-    formatted_results = []
-    for index, result in enumerate(results, start=1):
-        title = result.get("title", "Untitled result")
-        body = result.get("body", "No summary available")
-        href = result.get("href", "No URL available")
-        formatted_results.append(f"{index}. {title}\nSummary: {body}\nURL: {href}")
-
-    return "\n\n".join(formatted_results)
-
+# ──────────────────────────────────────────────
+# Formatting helpers
+# ──────────────────────────────────────────────
 
 def _format_documents(documents) -> str:
     if not documents:
         return "No matching local documents were found."
-
-    formatted_docs = []
-    for document in documents:
-        source = document.metadata.get("source", "unknown source")
-        formatted_docs.append(f"Source: {source}\n{document.page_content}")
-
-    return "\n\n---\n\n".join(formatted_docs)
+    parts = []
+    for doc in documents:
+        source = doc.metadata.get("source", "unknown source")
+        parts.append(f"Source: {source}\n{doc.page_content}")
+    return "\n\n---\n\n".join(parts)
 
 
 def _format_chat_history(chat_history) -> str:
     if not chat_history:
         return "No previous messages in this conversation."
-
-    formatted_messages = []
-    for message in chat_history:
-        role = message.get("role", "user")
-        content = message.get("content", "")
+    lines = []
+    for msg in chat_history:
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
         if content:
-            formatted_messages.append(f"{role}: {content}")
+            lines.append(f"{role}: {content}")
+    return "\n".join(lines) or "No previous messages in this conversation."
 
-    return "\n".join(formatted_messages) or "No previous messages in this conversation."
 
+# ──────────────────────────────────────────────
+# System prompt
+# ──────────────────────────────────────────────
+
+SYSTEM_PROMPT = """\
+You are BuildBusinessLK — a practical AI business advisor for Sri Lankan SMEs in the
+coconut (pol), palmyrah/thal, and kithul value chains.
+
+Registered user & business context (personalise your tone using this; never invent facts):
+{user_context}
+
+Your communication style:
+- Answer in plain, clear English. Use Sri Lankan product names naturally (pol = coconut, thal = palmyrah, kitul = kithul).
+- Do NOT use Markdown headings (#). Use **bold** for key terms sparingly.
+- Be conversational and warm — you are talking to a small business owner, not an academic.
+- Keep answers focused and actionable. Avoid generic business-school advice.
+
+Your job:
+- YOU synthesise insight from the local knowledge base and the user/business context below.
+- Do NOT tell the owner to "conduct research" as a standalone task.
+  Instead, share what you already know from the knowledge base, then give concrete next steps.
+- If the question is vague, ask 1–3 short clarifying questions BEFORE giving generic advice.
+  Example questions: product form, district, target channel (retail vs export), monthly volume, budget.
+
+Answer structure (adapt as needed):
+1. Start with a 2–3 sentence direct answer or situation summary.
+2. Then provide either:
+   (A) 2–3 strategic options — each with Pros, Cons, and who it fits.
+   (B) A short numbered action list — each step specific to this sector and Sri Lankan SME reality.
+3. Flag risks or unknowns honestly. If a price, law, or certification is uncertain, say so and suggest
+   where to verify (e.g. contact CDA, PDB, EDB) — but do not make this the user's entire homework.
+4. For unsupported sectors: follow the domain guard below.
+
+Formatting:
+- Use short plain-text section titles (no # symbols).
+- Use "1. ", "2. " for numbered lists; "- " for bullet points.
+- Leave a blank line before lists.
+
+Domain guard:
+{domain_notice}
+
+Local knowledge base:
+{context}
+
+Conversation so far:
+{chat_history}
+
+Use the conversation history to avoid repeating yourself and to build on what the user already shared.
+"""
+
+
+# ──────────────────────────────────────────────
+# Chain
+# ──────────────────────────────────────────────
 
 class SMEAdvisorChain:
     def __init__(self, retriever, llm, prompt):
         self.retriever = retriever
         self.chain = prompt | llm | StrOutputParser()
 
-    def invoke(self, inputs):
+    def invoke(self, inputs: dict) -> dict:
         question = inputs["input"]
         chat_history = _format_chat_history(inputs.get("chat_history", []))
         supported_sectors = _get_supported_sectors(question)
         unsupported_terms = _get_unsupported_terms(question)
 
+        # Hard guard — no supported sector mentioned at all
         if not supported_sectors:
             return {
-                "answer": _unsupported_dataset_message(unsupported_terms),
+                "answer": _unsupported_message(unsupported_terms),
                 "context": [],
-                "web_context": "No live web search was used for this answer.",
             }
 
-        user_context = inputs.get("user_context") or ""
-        if not str(user_context).strip():
-            user_context = "No registered user profile context was provided."
+        user_context = str(inputs.get("user_context") or "").strip()
+        if not user_context:
+            user_context = "No registered user or business profile was provided."
 
         documents = self.retriever.invoke(question)
         context = _format_documents(documents)
-        web_context = _search_web(question)
-        answer = self.chain.invoke(
-            {
-                "context": context,
-                "web_context": web_context,
-                "chat_history": chat_history,
-                "domain_notice": _domain_notice(unsupported_terms),
-                "user_context": user_context,
-                "input": question,
-            }
-        )
+
+        answer = self.chain.invoke({
+            "context": context,
+            "chat_history": chat_history,
+            "domain_notice": _domain_notice(unsupported_terms),
+            "user_context": user_context,
+            "input": question,
+        })
+
         return {
             "answer": answer,
             "context": documents,
-            "web_context": web_context,
         }
 
 
-def get_qa_chain():
+def get_qa_chain() -> SMEAdvisorChain:
     embeddings = HuggingFaceEmbeddings(
         model_name=EMBEDDING_MODEL,
         model_kwargs={"local_files_only": True},
@@ -222,79 +201,20 @@ def get_qa_chain():
         allow_dangerous_deserialization=True,
     )
 
+    # MMR retrieval — fetch_k=16 candidates, return top 6 diverse results
     retriever = vectorstore.as_retriever(
         search_type="mmr",
-        search_kwargs={"k": 6, "fetch_k": 14},
+        search_kwargs={"k": 6, "fetch_k": 16},
     )
 
     llm = ChatOllama(
         model=OLLAMA_MODEL,
-        temperature=0.35,
+        temperature=0.3,   # slightly lower for more consistent, grounded answers
     )
 
-    system_prompt = """
-You are BuildBusinessLK: an AI business growth assistant for Sri Lankan SMEs in coconut (pol),
-palmyrah/thal, and kithul value chains.
-
-Language & names:
-- Answer in clear English. Local names: pol=coconut, thal=palmyrah, kithul=kitul.
-- Do not output Markdown headings with # symbols. You may use **bold** and *emphasis* sparingly for key terms only.
-
-Registered user profile (BuildBusinessLK workspace — use only to personalize tone and relevant examples; never invent facts or numbers not supported by Local knowledge / Live web context / this block):
-{user_context}
-
-Your job (not the user's homework):
-- YOU synthesize market and sector insight from the Local knowledge and Live web context sections below.
-- Do NOT tell the owner to "conduct market research", "analyze competitors", or "study demand" as a standalone
-  to-do unless you immediately pair it with concrete findings or comparisons drawn FROM the provided context.
-  Instead, phrase it as guidance based on retrieved information, e.g. "In Sri Lanka's coconut sector, export-oriented
-  SME products often compete on X; typical constraints include Y" — then give practical next steps.
-
-If the question is thin on detail:
-- Offer the best provisional guidance you can from context, then ask 1–4 short clarifying questions
-  (product form, scale, district, target channel retail vs export, monthly volume, equipment budget).
-
-How to structure answers:
-1. Start with 2–4 sentences: direct answer or situation summary for this SME in Sri Lanka.
-2. Then give either:
-   (A) Two or three strategic OPTIONS (e.g. "Focus on retail", "Pilot export niche", "Stabilize supply first").
-      For EACH option include Pros, Cons, and who it fits (budget, risk tolerance, time horizon).
-   OR (B) A numbered list of concrete next actions the owner can start this week — each step must be specific
-      to coconut/palmyrah/kithul and SME reality (not generic business textbook steps).
-
-3. Include marketing that is realistic: low-cost social posts, local fairs, wholesale shops, cooperatives,
-   EDB-style programmes where mentioned in context—but do not invent programme names or guarantees.
-
-4. Risks & unknowns: state what cannot be known without more data; avoid inventing exact prices, laws,
-   certifications, grants, or export rules. If unsure, say so briefly and suggest verification paths
-   (e.g. contact CDA/PDB/EDB) without treating that as "the user must do research alone".
-
-5. Unsupported sectors (tea, rubber, etc.): obey Domain guard below; do not fabricate sector facts.
-
-Formatting:
-- Use short section titles as plain text lines (no #).
-- Prefer numbered lists like "1. " "2. " with a blank line before the list when helpful.
-
-Domain guard:
-{domain_notice}
-
-Local knowledge:
-{context}
-
-Live web context:
-{web_context}
-
-Conversation so far:
-{chat_history}
-
-Use the conversation to remember what the user already said. Keep tone practical, respectful, and concise.
-"""
-
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", system_prompt),
-            ("human", "{input}"),
-        ]
-    )
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", SYSTEM_PROMPT),
+        ("human", "{input}"),
+    ])
 
     return SMEAdvisorChain(retriever, llm, prompt)
