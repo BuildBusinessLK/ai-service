@@ -10,12 +10,24 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
+from ml.predict import recommend_business
 
 from rag.query import get_qa_chain
 
 load_dotenv()
 
 app = FastAPI(title="BuildBusinessLK AI Service", version="3.0")
+class RecommendationBody(BaseModel):
+    sector: str
+    budget: int
+    monthly_yield: int
+    employees: int
+    experience: str
+
+
+class BusinessAdvisorBody(BaseModel):
+    userProfile: Optional[dict] = None
+    businessProfile: Optional[dict] = None
 
 # Allow Spring Boot backend to call this service
 app.add_middleware(
@@ -78,6 +90,15 @@ def _parse_json_object(text: str) -> dict[str, Any]:
         s = re.sub(r"^```[a-zA-Z]*\n", "", s)
         s = re.sub(r"\n```\s*$", "", s)
     return json.loads(s)
+
+
+def _build_business_advisor_prompt(recommended_business: str, sector: str) -> str:
+    return (
+        f"Recommended business: {recommended_business}. "
+        f"Sector: {sector}. "
+        "Explain how to start and grow this business in Sri Lanka with practical steps for a small SME owner. "
+        "Keep the guidance grounded in coconut, palmyrah, or kithul local value chains and mention actionable next steps."
+    )
 
 
 # ──────────────────────────────────────────────
@@ -146,4 +167,70 @@ def website_copy(body: WebsiteCopyBody):
         "heroText": str(data.get("heroText", "")).strip(),
         "aboutText": str(data.get("aboutText", "")).strip(),
         "marketingText": str(data.get("marketingText", "")).strip(),
+    }
+
+
+@app.post("/business-advisor")
+def business_advisor(body: BusinessAdvisorBody):
+    missing_fields = []
+    business_profile = body.businessProfile or {}
+
+    for field_name in ["sector", "budget", "monthly_yield", "employees", "experience"]:
+        value = business_profile.get(field_name)
+        if value is None or (isinstance(value, str) and not value.strip()):
+            missing_fields.append(field_name)
+
+    if missing_fields:
+        return {
+            "message": (
+                "Please complete your business profile with the following fields: "
+                f"{', '.join(missing_fields)}."
+            )
+        }
+
+    try:
+        recommendation = recommend_business(
+            sector=business_profile["sector"],
+            budget=int(business_profile["budget"]),
+            monthly_yield=int(business_profile["monthly_yield"]),
+            employees=int(business_profile["employees"]),
+            experience=business_profile["experience"],
+        )
+    except ValueError as exc:
+        return {"message": str(exc)}
+    except Exception:
+        return {
+            "message": (
+                "Unable to generate a recommendation with the provided profile. "
+                "Please check the values and try again."
+            )
+        }
+
+    user_context = _format_profiles(body.userProfile, business_profile)
+    prompt = _build_business_advisor_prompt(recommendation, str(business_profile.get("sector", "")))
+    result = qa_chain.invoke({
+        "input": prompt,
+        "chat_history": [],
+        "user_context": user_context,
+    })
+
+    return {
+        "recommendedBusiness": recommendation,
+        "guidance": result["answer"],
+    }
+
+
+@app.post("/recommend-business")
+def recommend(body: RecommendationBody):
+
+    recommendation = recommend_business(
+        sector=body.sector,
+        budget=body.budget,
+        monthly_yield=body.monthly_yield,
+        employees=body.employees,
+        experience=body.experience
+    )
+
+    return {
+        "recommendation": recommendation
     }

@@ -1,0 +1,31 @@
+sector,budget,monthly_yield,employees,experience,recommendation
+coconut,100000,2000,1,beginner,Coconut Chips
+coconut,150000,2500,1,beginner,Coconut Chips
+coconut,200000,3000,2,beginner,Coconut Chips
+coconut,250000,3500,2,intermediate,Coconut Flour
+coconut,300000,4000,2,intermediate,Coconut Flour
+coconut,400000,5000,3,intermediate,Coconut Flour
+coconut,500000,6000,3,intermediate,Virgin Coconut Oil
+coconut,700000,8000,4,advanced,Virgin Coconut Oil
+coconut,850000,9000,4,advanced,Virgin Coconut Oil
+coconut,1000000,10000,5,advanced,Desiccated Coconut
+palmyrah,100000,500,1,beginner,Palm Jaggery
+palmyrah,150000,700,1,beginner,Palm Jaggery
+palmyrah,200000,900,2,beginner,Palm Jaggery
+palmyrah,250000,1000,2,intermediate,Palm Sugar
+palmyrah,300000,1200,2,intermediate,Palm Sugar
+palmyrah,350000,1400,3,intermediate,Palm Sugar
+palmyrah,400000,1500,3,advanced,Palm Treacle
+palmyrah,500000,1800,4,advanced,Palm Treacle
+palmyrah,600000,2200,4,advanced,Palm Treacle
+palmyrah,750000,2600,5,advanced,Palm Treacle
+kithul,80000,300,1,beginner,Kithul Treacle
+kithul,120000,450,1,beginner,Kithul Treacle
+kithul,160000,600,2,beginner,Kithul Treacle
+kithul,200000,700,2,intermediate,Kithul Jaggery
+kithul,250000,900,2,intermediate,Kithul Jaggery
+kithul,300000,1050,3,intermediate,Kithul Jaggery
+kithul,350000,1200,3,advanced,Kithul Flour
+kithul,450000,1500,4,advanced,Kithul Flour
+kithul,550000,1800,4,advanced,Kithul Flour
+kithul,700000,2200,5,advanced,Kithul Flour
