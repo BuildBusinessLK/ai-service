@@ -33,6 +33,11 @@ except Exception:
     UnstructuredPowerPointLoader = None
 
 try:
+    from langchain.document_loaders import UnstructuredExcelLoader
+except Exception:
+    UnstructuredExcelLoader = None
+
+try:
     import pandas as pd
 except Exception:
     pd = None
@@ -108,7 +113,11 @@ def load_documents() -> List:
                             docs.append(Document(page_content=text, metadata={"source": path}))
 
                 elif lower.endswith(".xlsx") or lower.endswith(".xls"):
-                    docs.extend(_load_via_pandas(path))
+                    if UnstructuredExcelLoader is not None:
+                        loader = UnstructuredExcelLoader(path)
+                        docs.extend(loader.load())
+                    else:
+                        docs.extend(_load_via_pandas(path))
 
                 elif lower.endswith(".html") or lower.endswith(".htm"):
                     # simple HTML fallback: read as text
