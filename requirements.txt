@@ -10,6 +10,14 @@ ddgs
 python-dotenv
 requests
 beautifulsoup4
-pandas 
-scikit-learn 
+pandas
+scikit-learn
 joblib
+
+# Optional document loaders and utilities
+python-docx
+python-pptx
+pypdf
+openai
+unstructured
+openpyxl

@@ -1,5 +1,6 @@
 import os
 import re
+import importlib
 
 # Keep HuggingFace in offline mode once ingested — no live model downloads during inference.
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -7,13 +8,78 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+
+# Optional model adapters — import dynamically so the service can run without all
+# adapters installed. We prefer Ollama as the default (existing behaviour).
+try:
+    from langchain_ollama import ChatOllama
+except Exception:
+    ChatOllama = None
+
+ChatOpenAI = None
+try:
+    ChatOpenAI = importlib.import_module("langchain.chat_models").ChatOpenAI
+except Exception:
+    ChatOpenAI = None
+
+# Google / Gemini adapter (may not be present in every environment). We try
+# a few known module locations so the factory below can pick the best option.
+ChatGoogleGemini = None
+for candidate in ("langchain.chat_models.google", "langchain.chat_models.vertex_ai"):
+    try:
+        mod = importlib.import_module(candidate)
+        # Some langchain versions expose a Gemini/Vertex wrapper with different names
+        for attr in ("ChatGoogleGenerativeAI", "ChatVertexAI", "ChatGoogleGemini"):
+            if hasattr(mod, attr):
+                ChatGoogleGemini = getattr(mod, attr)
+                break
+        if ChatGoogleGemini:
+            break
+    except Exception:
+        continue
 
 DB_PATH = os.getenv("VECTORSTORE_PATH", "rag/vectorstore")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "OLLAMA").upper()
+
+
+def _get_llm(temperature: float | None = None):
+    """Factory to return an LLM/chat model instance based on env vars.
+
+    Supports:
+    - OLLAMA: existing Ollama adapter (`langchain_ollama.ChatOllama`).
+    - OPENAI: LangChain `ChatOpenAI` wrapper (useful if you route Gemini-like
+      models through an OpenAI-compatible API).
+    - GEMINI / GOOGLE: LangChain Google/Vertex adapter if available.
+    """
+    temp = float(temperature) if temperature is not None else float(os.getenv("LLM_TEMPERATURE", "0.3"))
+    provider = os.getenv("LLM_PROVIDER", LLM_PROVIDER).upper()
+
+    if provider == "OLLAMA" and ChatOllama is not None:
+        return ChatOllama(model=os.getenv("OLLAMA_MODEL", OLLAMA_MODEL), temperature=temp)
+
+    if provider in ("OPENAI",) and ChatOpenAI is not None:
+        model_name = os.getenv("OPENAI_MODEL", os.getenv("GEMINI_MODEL", "gpt-4o-mini"))
+        return ChatOpenAI(model_name=model_name, temperature=temp)
+
+    if provider in ("GEMINI", "GOOGLE") and ChatGoogleGemini is not None:
+        model_name = os.getenv("GEMINI_MODEL", "gemini")
+        try:
+            # different adapters expect different param names; try common ones
+            return ChatGoogleGemini(model=model_name, temperature=temp)
+        except TypeError:
+            return ChatGoogleGemini(model_name=model_name, temperature=temp)
+
+    # Fallbacks
+    if ChatOllama is not None:
+        return ChatOllama(model=os.getenv("OLLAMA_MODEL", OLLAMA_MODEL), temperature=temp)
+    if ChatOpenAI is not None:
+        return ChatOpenAI(model_name=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), temperature=temp)
+
+    raise RuntimeError("No LLM adapter is installed. Install one of: langchain-ollama, langchain (OpenAI), or the Google/Vertex adapters.")
 
 # ──────────────────────────────────────────────
 # Domain guard
@@ -52,10 +118,9 @@ def _get_unsupported_terms(question: str) -> list[str]:
 def _unsupported_message(terms: list[str] | None = None) -> str:
     topic = ", ".join(terms) if terms else "that sector"
     return (
-        "Sorry — BuildBusinessLK currently has verified data only for coconut (pol), "
-        "palmyrah/thal, and kithul. We do not have enough dataset coverage to answer about "
-        f"{topic} yet. I will flag this to the team so we can add that data soon. "
-        "In the meantime, I am happy to help with coconut, palmyrah, or kithul questions."
+        "I’m sorry, I only have good, verified data for coconut (pol), palmyrah/thal, "
+        "and kithul right now. I can’t answer in depth about "
+        f"{topic} yet, but I’m happy to help with coconut, palmyrah, or kithul questions."
     )
 
 
@@ -114,6 +179,7 @@ Your communication style:
 
 Your job:
 - YOU synthesise insight from the local knowledge base and the user/business context below.
+- If the user context contains an ML recommendation summary, treat it as a trusted guidance signal and use it to shape the answer.
 - Do NOT tell the owner to "conduct research" as a standalone task.
   Instead, share what you already know from the knowledge base, then give concrete next steps.
 - If the question is vague, ask 1–3 short clarifying questions BEFORE giving generic advice.
@@ -207,10 +273,7 @@ def get_qa_chain() -> SMEAdvisorChain:
         search_kwargs={"k": 6, "fetch_k": 16},
     )
 
-    llm = ChatOllama(
-        model=OLLAMA_MODEL,
-        temperature=0.3,   # slightly lower for more consistent, grounded answers
-    )
+    llm = _get_llm(temperature=0.3)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", SYSTEM_PROMPT),
