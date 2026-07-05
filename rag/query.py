@@ -270,7 +270,7 @@ def get_qa_chain() -> SMEAdvisorChain:
     # MMR retrieval — fetch_k=16 candidates, return top 6 diverse results
     retriever = vectorstore.as_retriever(
         search_type="mmr",
-        search_kwargs={"k": 6, "fetch_k": 16},
+        search_kwargs={"k": 3, "fetch_k": 8},
     )
 
     llm = _get_llm(temperature=0.3)
