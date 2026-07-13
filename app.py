@@ -8,25 +8,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
-from ml.predict import recommend_business
 
-from rag.query import get_qa_chain, _get_llm
+from rag.query import get_qa_chain
 
 load_dotenv()
 
 app = FastAPI(title="BuildBusinessLK AI Service", version="3.0")
-class RecommendationBody(BaseModel):
-    sector: str
-    budget: int
-    monthly_yield: int
-    employees: int
-    experience: str
-
-
-class BusinessAdvisorBody(BaseModel):
-    userProfile: Optional[dict] = None
-    businessProfile: Optional[dict] = None
 
 # Allow Spring Boot backend to call this service
 app.add_middleware(
@@ -37,7 +26,10 @@ app.add_middleware(
 )
 
 # Initialise RAG chain at startup (loads FAISS index + embeddings once)
-qa_chain = get_qa_chain()
+try:
+    service_state.qa_chain = get_qa_chain()
+except Exception as exc:  # pragma: no cover - defensive startup fallback
+    service_state.initialization_error = str(exc)
 
 MODEL_PROVIDER = os.getenv("LLM_PROVIDER", "OLLAMA")
 MODEL_NAME = os.getenv("OLLAMA_MODEL", "llama3")
@@ -61,6 +53,12 @@ class ChatBody(BaseModel):
 
 class WebsiteCopyBody(BaseModel):
     businessProfile: Optional[dict] = None
+
+
+class AdGenerationBody(BaseModel):
+    prompt: str
+    businessProfile: Optional[dict] = None
+    userProfile: Optional[dict] = None
 
 
 # ──────────────────────────────────────────────
@@ -205,31 +203,7 @@ def chat(body: ChatBody):
     Accepts the user question + chat history + user/business profile context.
     Returns the AI answer as {"message": "..."}
     """
-    parsed_profile = _parse_business_profile(body.question)
-    business_profile = dict(body.businessProfile or {})
-    business_profile.update(parsed_profile)
-
-    recommended = None
-    if all(
-        key in business_profile
-        for key in ["sector", "budget", "monthly_yield", "employees", "experience"]
-    ):
-        try:
-            recommended = recommend_business(
-                sector=business_profile["sector"],
-                budget=int(business_profile["budget"]),
-                monthly_yield=int(business_profile["monthly_yield"]),
-                employees=int(business_profile["employees"]),
-                experience=business_profile["experience"],
-            )
-            business_profile["recommendedBusiness"] = recommended
-        except Exception:
-            recommended = None
-
-    user_context = _format_profiles(body.userProfile, business_profile)
-    ml_context = _build_ml_context(business_profile)
-    combined_context = user_context + "\n\n" + ml_context if ml_context else user_context
-
+    user_context = _format_profiles(body.userProfile, body.businessProfile)
     result = qa_chain.invoke({
         "input": body.question,
         "chat_history": [_message_to_dict(m) for m in body.chat_history],
@@ -247,7 +221,7 @@ def website_copy(body: WebsiteCopyBody):
     bp = body.businessProfile or {}
     raw = json.dumps(bp, ensure_ascii=False, indent=2)
 
-    llm = _get_llm(temperature=0.35)
+    llm = ChatOllama(model=OLLAMA_MODEL, temperature=0.35)
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
@@ -261,6 +235,13 @@ def website_copy(body: WebsiteCopyBody):
             "Business context (JSON):\n{business}\n\nWrite short, convincing copy for a one-page website.",
         ),
     ])
+
+    if llm is None:
+        return {
+            "heroText": f"Welcome to {bp.get('businessName') or 'our business'}",
+            "aboutText": "Quality Sri Lankan products, crafted with care and delivered with integrity.",
+            "marketingText": "Explore our range and connect with us today.",
+        }
 
     chain = prompt | llm | StrOutputParser()
     out = chain.invoke({"business": raw})
@@ -346,3 +327,164 @@ def recommend(body: RecommendationBody):
     return {
         "recommendation": recommendation
     }
+
+
+# @app.post("/ad-generate")
+def ad_generate(body: AdGenerationBody):
+    """
+    Generates structured advertisements for multiple platforms.
+    """
+
+    prompt = body.prompt or "Write a marketing advertisement."
+
+    business_profile = body.businessProfile or {}
+    user_profile = body.userProfile or {}
+
+    try:
+        llm = ChatOllama(
+            model=OLLAMA_MODEL,
+            temperature=0.4
+        )
+    except Exception:
+        llm = None
+
+    system_prompt = """
+You are an expert AI Marketing Strategist.
+
+Your job is to create high-quality marketing advertisements.
+
+Rules:
+
+- Never invent information.
+- Only use the supplied business profile.
+- Make the advertisements persuasive.
+- Use professional English.
+- Return ONLY valid JSON.
+- Never return markdown.
+- Never return explanations.
+"""
+
+    if llm is None:
+
+        return {
+            "headline": "Advertisement",
+            "facebook": f"Discover {business_profile.get('businessName','our business')} today.",
+            "instagram": "Visit us today.",
+            "google": "Quality Products",
+            "headlines": [
+                "Best Quality",
+                "Shop Today",
+                "Special Offer",
+                "Trusted Business",
+                "Contact Us"
+            ],
+            "hashtags": [
+                "#Business",
+                "#SriLanka",
+                "#Quality",
+                "#SupportLocal",
+                "#ShopNow"
+            ],
+            "marketingTips": "Promote this advertisement using Facebook and Instagram."
+        }
+
+    prompt_template = ChatPromptTemplate.from_messages([
+
+        ("system", system_prompt),
+
+        ("human", """
+Business Profile
+
+{business_profile_json}
+
+User Profile
+
+{user_profile_json}
+
+Marketing Request
+
+{marketing_prompt}
+
+Return ONLY this JSON format.
+
+{
+    "headline":"",
+
+    "facebook":"",
+
+    "instagram":"",
+
+    "google":"",
+
+    "headlines":[
+        "",
+        "",
+        "",
+        "",
+        ""
+    ],
+
+    "hashtags":[
+        "",
+        "",
+        "",
+        "",
+        ""
+    ],
+
+    "marketingTips":""
+}
+
+Do NOT include markdown.
+
+Do NOT include explanations.
+
+Return JSON only.
+""")
+    ])
+
+    chain = prompt_template | llm | StrOutputParser()
+
+    try:
+
+        generated = chain.invoke({
+
+            "business_profile_json": json.dumps(
+                business_profile,
+                indent=2,
+                ensure_ascii=False
+            ),
+
+            "user_profile_json": json.dumps(
+                user_profile,
+                indent=2,
+                ensure_ascii=False
+            ),
+
+            "marketing_prompt": prompt
+
+        })
+
+        ads = _parse_json_object(generated)
+
+    except Exception:
+
+        ads = {
+
+            "headline": "Advertisement",
+
+            "facebook": generated if 'generated' in locals() else "",
+
+            "instagram": "",
+
+            "google": "",
+
+            "headlines": [],
+
+            "hashtags": [],
+
+            "marketingTips": ""
+
+        }
+
+    return ads
