@@ -1,0 +1,101 @@
+== CERTIFICATIONS ==
+
+Sri Lanka Standards (SLS)
+
+ISO 22000
+
+HACCP
+
+Organic Certification
+
+FDA (USA)
+
+Halal
+
+Good Manufacturing Practices
+
+Export Registration
+
+Food Premises Registration
+
+Coconut Development Authority Registration
+
+Palmyrah Development Board Registration
+
+== BUSINESS RULES ==
+
+IF Budget < 50,000
+
+Recommend
+
+Crafts
+
+Fresh Products
+
+Home Food
+
+--------------------------------
+
+IF Budget 50,000-500,000
+
+Recommend
+
+Virgin Coconut Oil
+
+Flour
+
+Treacle
+
+Jam
+
+--------------------------------
+
+IF Budget > 500,000
+
+Recommend
+
+Export
+
+Wholesale
+
+Manufacturing
+
+--------------------------------
+
+IF User Has Farm
+
+Recommend
+
+Value Addition
+
+--------------------------------
+
+IF User Has No Farm
+
+Recommend
+
+Buy From Farmers
+
+--------------------------------
+
+IF User Wants Fast Income
+
+Recommend
+
+Fresh Products
+
+--------------------------------
+
+IF User Wants Long-Term Brand
+
+Recommend
+
+Premium Food Products
+
+--------------------------------
+
+IF User Wants Export
+
+Recommend
+
+Food Certifications
