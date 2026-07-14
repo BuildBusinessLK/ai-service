@@ -1,27 +1,24 @@
 import json
 import os
 import re
+from types import SimpleNamespace
 from typing import Any, List, Optional
 
-from fastapi import FastAPI  # type: ignore
-from fastapi.middleware.cors import CORSMiddleware  # type: ignore
-from langchain_core.output_parsers import StrOutputParser  # type: ignore
-from langchain_core.prompts import ChatPromptTemplate  # type: ignore
-from langchain_ollama import ChatOllama  # type: ignore
-from pydantic import BaseModel, Field  # type: ignore
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+import traceback
+from fastapi.middleware.cors import CORSMiddleware
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_ollama import ChatOllama
+from pydantic import BaseModel, Field
 
 from rag.query import get_qa_chain
 
+load_dotenv()
+
 app = FastAPI(title="BuildBusinessLK AI Service", version="3.0")
-
-
-class ServiceState:
-    def __init__(self) -> None:
-        self.qa_chain = None
-        self.initialization_error: Optional[str] = None
-
-
-service_state = ServiceState()
+service_state = SimpleNamespace(qa_chain=None, initialization_error=None)
 
 # Allow Spring Boot backend to call this service
 app.add_middleware(
@@ -62,6 +59,10 @@ class WebsiteCopyBody(BaseModel):
 
 class AdGenerationBody(BaseModel):
     prompt: str
+    idea: Optional[str] = None
+    tone: Optional[str] = None
+    platform: Optional[str] = None
+    website: Optional[str] = None
     businessProfile: Optional[dict] = None
     userProfile: Optional[dict] = None
 
@@ -93,6 +94,77 @@ def _parse_json_object(text: str) -> dict[str, Any]:
         s = re.sub(r"^```[a-zA-Z]*\n", "", s)
         s = re.sub(r"\n```\s*$", "", s)
     return json.loads(s)
+
+
+def _build_business_advisor_prompt(recommended_business: str, sector: str) -> str:
+    return (
+        f"Recommended business: {recommended_business}. "
+        f"Sector: {sector}. "
+        "Explain how to start and grow this business in Sri Lanka with practical steps for a small SME owner. "
+        "Keep the guidance grounded in coconut, palmyrah, or kithul local value chains and mention actionable next steps."
+    )
+
+
+def _build_local_ad_fallback(body: AdGenerationBody) -> str:
+    business_name = (body.businessProfile or {}).get("businessName") or "your business"
+    sector = (body.businessProfile or {}).get("sector") or "your industry"
+    user_name = (body.userProfile or {}).get("fullName") or "our team"
+    # Use the clean, user-supplied idea here — never the full prompt/brief,
+    # which contains multi-line business context and formatting instructions
+    # that are not meant to be echoed into ad copy.
+    request = (body.idea or "our latest offer").strip() or "our latest offer"
+
+    return f"""Facebook Ad
+--------------------
+{business_name} is excited to introduce {request} for customers who value quality and trust.
+Discover more today and experience the difference.
+
+Instagram Ad
+--------------------
+{business_name} brings {request} to life with care, quality, and a personal touch.
+Follow us and stay connected for the latest updates.
+
+WhatsApp Advertisement
+--------------------
+Hello! We are {business_name}, and we are proud to share {request} with you.
+Reach out today to learn more about our offer.
+
+Short Headline
+--------------------
+Fresh solutions from {business_name}
+
+Call to Action
+--------------------
+Contact us today or visit our website to learn more.
+
+Hashtags
+--------------------
+#{business_name.replace(' ', '')} #BusinessGrowth #SME #DigitalMarketing #{sector.replace(' ', '')}
+
+Suggested Tone
+--------------------
+Friendly and professional for {user_name}.
+"""
+
+
+_PROMPT_ECHO_MARKERS = (
+    "you are an expert",
+    "business information",
+    "==============================",
+    "instructions",
+)
+
+
+def _looks_like_echoed_prompt(text: str) -> bool:
+    """Heuristic guard: if the model's output contains the scaffolding of our
+    own prompt (headers, meta-instructions) instead of actual ad copy, treat
+    it as a bad generation so we fall back to a clean template instead of
+    showing the user a garbled response."""
+    if not text:
+        return True
+    lowered = text.lower()
+    hits = sum(1 for marker in _PROMPT_ECHO_MARKERS if marker in lowered)
+    return hits >= 2
 
 
 # ──────────────────────────────────────────────
@@ -181,163 +253,133 @@ def website_copy(body: WebsiteCopyBody):
         "marketingText": str(data.get("marketingText", "")).strip(),
     }
 
-
-# @app.post("/ad-generate")
-def ad_generate(body: AdGenerationBody):
-    """
-    Generates structured advertisements for multiple platforms.
-    """
-
-    prompt = body.prompt or "Write a marketing advertisement."
-
-    business_profile = body.businessProfile or {}
-    user_profile = body.userProfile or {}
-
+@app.post("/ad-generate")
+def generate_ad(body: AdGenerationBody):
     try:
-        llm = ChatOllama(
-            model=OLLAMA_MODEL,
-            temperature=0.4
+
+        business = json.dumps(
+            body.businessProfile or {},
+            ensure_ascii=False,
+            indent=2
         )
-    except Exception:
-        llm = None
 
-    system_prompt = """
-You are an expert AI Marketing Strategist.
+        user = json.dumps(
+            body.userProfile or {},
+            ensure_ascii=False,
+            indent=2
+        )
 
-Your job is to create high-quality marketing advertisements.
+        prompt = ChatPromptTemplate.from_messages([
+            (
+                "system",
+                """
+You are an expert Sri Lankan SME marketing assistant and advertising copywriter.
+
+You will be given a business profile, a user profile, and a campaign brief
+describing what the advertisement should be about. Write real, ready-to-post
+advertisement copy that personalizes the message using the business and user
+details provided.
 
 Rules:
+- Output ONLY the advertisement content in the format below. Never repeat,
+  quote, or summarize these instructions or the brief itself in your answer.
+- Do not include section separators like "====" or restate field labels
+  such as "Business Information" or "Instructions".
+- Keep each section short and platform-appropriate.
 
-- Never invent information.
-- Only use the supplied business profile.
-- Make the advertisements persuasive.
-- Use professional English.
-- Return ONLY valid JSON.
-- Never return markdown.
-- Never return explanations.
+Return exactly these sections, in this order:
+
+Facebook Ad
+--------------------
+<ad text>
+
+Instagram Ad
+--------------------
+<ad text>
+
+WhatsApp Advertisement
+--------------------
+<ad text>
+
+Short Headline
+--------------------
+<one headline>
+
+Call to Action
+--------------------
+<one call to action>
+
+Hashtags
+--------------------
+<3-5 hashtags>
 """
+            ),
+            (
+                "human",
+                """
+Business profile (JSON):
+{business}
 
-    if llm is None:
+User profile (JSON):
+{user}
+
+Campaign brief:
+{prompt}
+"""
+            )
+        ])
+
+        try:
+            llm = ChatOllama(
+                model=OLLAMA_MODEL,
+                temperature=0.5
+            )
+        except Exception as e:
+            traceback.print_exc()
+            return {
+                "generatedAds": _build_local_ad_fallback(body)
+            }
+
+        chain = prompt | llm | StrOutputParser()
+
+        print("========================")
+        print(body.model_dump())
+        print("========================")
+
+        try:
+            if not body.prompt:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Prompt cannot be empty."
+                )
+            result = chain.invoke({
+                "business": business,
+                "user": user,
+                "prompt": body.prompt
+            })
+            result_text = str(result).strip() if result else ""
+            if not result_text or _looks_like_echoed_prompt(result_text):
+                # The model failed to follow instructions and echoed the
+                # prompt/brief back instead of writing ad copy — use the
+                # clean template fallback rather than show garbage.
+                return {
+                    "generatedAds": _build_local_ad_fallback(body)
+                }
+        except Exception:
+            traceback.print_exc()
+            return {
+                "generatedAds": _build_local_ad_fallback(body)
+            }
 
         return {
-            "headline": "Advertisement",
-            "facebook": f"Discover {business_profile.get('businessName','our business')} today.",
-            "instagram": "Visit us today.",
-            "google": "Quality Products",
-            "headlines": [
-                "Best Quality",
-                "Shop Today",
-                "Special Offer",
-                "Trusted Business",
-                "Contact Us"
-            ],
-            "hashtags": [
-                "#Business",
-                "#SriLanka",
-                "#Quality",
-                "#SupportLocal",
-                "#ShopNow"
-            ],
-            "marketingTips": "Promote this advertisement using Facebook and Instagram."
+            "generatedAds": result
         }
 
-    prompt_template = ChatPromptTemplate.from_messages([
+    except Exception as e:
+        traceback.print_exc()
 
-        ("system", system_prompt),
-
-        ("human", """
-Business Profile
-
-{business_profile_json}
-
-User Profile
-
-{user_profile_json}
-
-Marketing Request
-
-{marketing_prompt}
-
-Return ONLY this JSON format.
-
-{
-    "headline":"",
-
-    "facebook":"",
-
-    "instagram":"",
-
-    "google":"",
-
-    "headlines":[
-        "",
-        "",
-        "",
-        "",
-        ""
-    ],
-
-    "hashtags":[
-        "",
-        "",
-        "",
-        "",
-        ""
-    ],
-
-    "marketingTips":""
-}
-
-Do NOT include markdown.
-
-Do NOT include explanations.
-
-Return JSON only.
-""")
-    ])
-
-    chain = prompt_template | llm | StrOutputParser()
-
-    try:
-
-        generated = chain.invoke({
-
-            "business_profile_json": json.dumps(
-                business_profile,
-                indent=2,
-                ensure_ascii=False
-            ),
-
-            "user_profile_json": json.dumps(
-                user_profile,
-                indent=2,
-                ensure_ascii=False
-            ),
-
-            "marketing_prompt": prompt
-
-        })
-
-        ads = _parse_json_object(generated)
-
-    except Exception:
-
-        ads = {
-
-            "headline": "Advertisement",
-
-            "facebook": generated if 'generated' in locals() else "",
-
-            "instagram": "",
-
-            "google": "",
-
-            "headlines": [],
-
-            "hashtags": [],
-
-            "marketingTips": ""
-
+        return {
+            "success": False,
+            "error": str(e),
+            "type": type(e).__name__
         }
-
-    return ads
