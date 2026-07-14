@@ -10,3 +10,6 @@ ddgs
 python-dotenv
 requests
 beautifulsoup4
+pandas 
+scikit-learn 
+joblib
