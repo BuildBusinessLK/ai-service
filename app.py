@@ -109,10 +109,29 @@ def _build_local_ad_fallback(body: AdGenerationBody) -> str:
     business_name = (body.businessProfile or {}).get("businessName") or "your business"
     sector = (body.businessProfile or {}).get("sector") or "your industry"
     user_name = (body.userProfile or {}).get("fullName") or "our team"
-    # Use the clean, user-supplied idea here — never the full prompt/brief,
-    # which contains multi-line business context and formatting instructions
-    # that are not meant to be echoed into ad copy.
-    request = (body.idea or "our latest offer").strip() or "our latest offer"
+    
+    idea_str = body.idea or ""
+    if "Current ad copy:" in idea_str and "Edit request:" in idea_str:
+        try:
+            parts = idea_str.split("Current ad copy:")
+            after_ad = parts[1].split("Edit request:")
+            current_ad = after_ad[0].strip()
+            edit_request = after_ad[1].strip()
+            
+            # Match change X to Y or replace X with Y
+            match = re.search(r'(?:change|replace)\s+(.+?)\s+(?:to|with)\s+(.+)', edit_request, re.IGNORECASE)
+            if match:
+                old_val = match.group(1).strip()
+                new_val = match.group(2).strip()
+                # Run case-insensitive replace on the current ad text
+                pattern = re.compile(re.escape(old_val), re.IGNORECASE)
+                updated_ad = pattern.sub(new_val, current_ad)
+                return updated_ad
+            return current_ad
+        except Exception:
+            pass
+
+    request = idea_str.strip() or "our latest offer"
 
     return f"""Facebook Ad
 --------------------
