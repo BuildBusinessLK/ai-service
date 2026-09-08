@@ -1,9 +1,9 @@
 import os
 import re
 
-# Keep HuggingFace in offline mode once ingested — no live model downloads during inference.
-os.environ.setdefault("HF_HUB_OFFLINE", "1")
-os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+# Configuration: prefer offline only if a local vectorstore exists or the user forces offline.
+# This lets the service download models the first time (when building the vectorstore), but
+# remain offline for inference after ingestion.
 
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -14,6 +14,20 @@ from langchain_core.output_parsers import StrOutputParser
 DB_PATH = os.getenv("VECTORSTORE_PATH", "rag/vectorstore")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+
+# Decide offline mode: if VECTORSTORE_PATH exists we should run fully offline;
+# otherwise allow online downloads so the model can be cached and the vectorstore built.
+force_offline = os.getenv("HF_FORCE_OFFLINE", "").lower() in ("1", "true", "yes")
+vectorstore_exists = os.path.exists(DB_PATH)
+if force_offline or vectorstore_exists:
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+    LOCAL_FILES_ONLY = True
+else:
+    # Ensure environment flags are not forcing offline mode so downloads can occur
+    os.environ.pop("HF_HUB_OFFLINE", None)
+    os.environ.pop("TRANSFORMERS_OFFLINE", None)
+    LOCAL_FILES_ONLY = False
 
 # ──────────────────────────────────────────────
 # Domain guard
@@ -192,7 +206,7 @@ class SMEAdvisorChain:
 def get_qa_chain() -> SMEAdvisorChain:
     embeddings = HuggingFaceEmbeddings(
         model_name=EMBEDDING_MODEL,
-        model_kwargs={"local_files_only": True},
+        model_kwargs={"local_files_only": LOCAL_FILES_ONLY},
     )
 
     vectorstore = FAISS.load_local(
