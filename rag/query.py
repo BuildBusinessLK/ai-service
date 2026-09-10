@@ -22,16 +22,13 @@ DB_PATH = os.getenv("VECTORSTORE_PATH", DEFAULT_DB_PATH)
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 
-# Decide offline mode: if VECTORSTORE_PATH exists we should run fully offline;
-# otherwise allow online downloads so the model can be cached and the vectorstore built.
+# Decide offline mode: only force offline mode if HF_FORCE_OFFLINE is explicitly set.
 force_offline = os.getenv("HF_FORCE_OFFLINE", "").lower() in ("1", "true", "yes")
-vectorstore_exists = os.path.exists(DB_PATH)
-if force_offline or vectorstore_exists:
+if force_offline:
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
     LOCAL_FILES_ONLY = True
 else:
-    # Ensure environment flags are not forcing offline mode so downloads can occur
     os.environ.pop("HF_HUB_OFFLINE", None)
     os.environ.pop("TRANSFORMERS_OFFLINE", None)
     LOCAL_FILES_ONLY = False
