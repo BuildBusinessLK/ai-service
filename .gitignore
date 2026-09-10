@@ -19,8 +19,9 @@ build/
 .venv
 venv/
 
-# FAISS vector store (regenerate with ingest.py)
-rag/vectorstore/
+# FAISS vector store
+!rag/vectorstore/
+!rag/vectorstore/*
 
 # Jupyter
 .ipynb_checkpoints/
