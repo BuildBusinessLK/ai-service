@@ -17,7 +17,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from llm_factory import get_llm
 
-DB_PATH = os.getenv("VECTORSTORE_PATH", "rag/vectorstore")
+DEFAULT_DB_PATH = os.path.join(os.path.dirname(__file__), "vectorstore")
+DB_PATH = os.getenv("VECTORSTORE_PATH", DEFAULT_DB_PATH)
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 
