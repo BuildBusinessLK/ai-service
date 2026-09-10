@@ -5,8 +5,12 @@ import re
 # This lets the service download models the first time (when building the vectorstore), but
 # remain offline for inference after ingestion.
 
-from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
+try:
+    from langchain_community.embeddings import FastEmbedEmbeddings
+    USE_FASTEMBED = True
+except ImportError:
+    from langchain_huggingface import HuggingFaceEmbeddings
+    USE_FASTEMBED = False
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from llm_factory import get_llm
@@ -204,10 +208,13 @@ class SMEAdvisorChain:
 
 
 def get_qa_chain() -> SMEAdvisorChain:
-    embeddings = HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL,
-        model_kwargs={"local_files_only": LOCAL_FILES_ONLY},
-    )
+    if USE_FASTEMBED:
+        embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+    else:
+        embeddings = HuggingFaceEmbeddings(
+            model_name=EMBEDDING_MODEL,
+            model_kwargs={"local_files_only": LOCAL_FILES_ONLY},
+        )
 
     vectorstore = FAISS.load_local(
         DB_PATH,
