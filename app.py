@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama import ChatOllama
+from llm_factory import get_llm
 from pydantic import BaseModel, Field
 from ml.predict import recommend_business
 
@@ -135,7 +135,7 @@ def website_copy(body: WebsiteCopyBody):
     bp = body.businessProfile or {}
     raw = json.dumps(bp, ensure_ascii=False, indent=2)
 
-    llm = ChatOllama(model=OLLAMA_MODEL, temperature=0.35)
+    llm = get_llm(temperature=0.35)
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",

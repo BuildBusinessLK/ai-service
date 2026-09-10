@@ -7,9 +7,9 @@ import re
 
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from llm_factory import get_llm
 
 DB_PATH = os.getenv("VECTORSTORE_PATH", "rag/vectorstore")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
@@ -221,10 +221,7 @@ def get_qa_chain() -> SMEAdvisorChain:
         search_kwargs={"k": 6, "fetch_k": 16},
     )
 
-    llm = ChatOllama(
-        model=OLLAMA_MODEL,
-        temperature=0.3,   # slightly lower for more consistent, grounded answers
-    )
+    llm = get_llm(temperature=0.3)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", SYSTEM_PROMPT),
