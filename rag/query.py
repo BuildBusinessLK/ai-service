@@ -5,6 +5,8 @@ import re
 os.environ.setdefault("FASTEMBED_CACHE_PATH", "/tmp")
 os.environ.setdefault("HF_HOME", "/tmp")
 
+from langchain_community.vectorstores import FAISS
+
 try:
     from langchain_community.embeddings import FastEmbedEmbeddings
     USE_FASTEMBED = True
