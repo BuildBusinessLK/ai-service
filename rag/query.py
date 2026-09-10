@@ -1,9 +1,9 @@
 import os
 import re
 
-# Configuration: prefer offline only if a local vectorstore exists or the user forces offline.
-# This lets the service download models the first time (when building the vectorstore), but
-# remain offline for inference after ingestion.
+# Set writable cache directory for serverless environments (Vercel has read-only root)
+os.environ.setdefault("FASTEMBED_CACHE_PATH", "/tmp")
+os.environ.setdefault("HF_HOME", "/tmp")
 
 try:
     from langchain_community.embeddings import FastEmbedEmbeddings
@@ -209,7 +209,7 @@ class SMEAdvisorChain:
 
 def get_qa_chain() -> SMEAdvisorChain:
     if USE_FASTEMBED:
-        embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+        embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5", cache_dir="/tmp")
     else:
         embeddings = HuggingFaceEmbeddings(
             model_name=EMBEDDING_MODEL,

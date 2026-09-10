@@ -1,6 +1,9 @@
 import json
 import os
 import re
+
+os.environ.setdefault("FASTEMBED_CACHE_PATH", "/tmp")
+os.environ.setdefault("HF_HOME", "/tmp")
 from typing import Any, List, Optional
 
 from dotenv import load_dotenv
