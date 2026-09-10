@@ -40,8 +40,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialise RAG chain at startup (loads FAISS index + embeddings once)
-qa_chain = get_qa_chain()
+from fastapi.responses import JSONResponse
+
+qa_chain = None
+
+def _get_chain():
+    global qa_chain
+    if qa_chain is None:
+        qa_chain = get_qa_chain()
+    return qa_chain
 
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 
@@ -120,13 +127,19 @@ def chat(body: ChatBody):
     Accepts the user question + chat history + user/business profile context.
     Returns the AI answer as {"message": "..."}
     """
-    user_context = _format_profiles(body.userProfile, body.businessProfile)
-    result = qa_chain.invoke({
-        "input": body.question,
-        "chat_history": [_message_to_dict(m) for m in body.chat_history],
-        "user_context": user_context,
-    })
-    return {"message": result["answer"]}
+    try:
+        chain = _get_chain()
+        user_context = _format_profiles(body.userProfile, body.businessProfile)
+        result = chain.invoke({
+            "input": body.question,
+            "chat_history": [_message_to_dict(m) for m in body.chat_history],
+            "user_context": user_context,
+        })
+        return {"message": result["answer"]}
+    except Exception as e:
+        import logging, traceback
+        logging.error(f"Chat error: {e}\n{traceback.format_exc()}")
+        return JSONResponse(status_code=500, content={"message": f"AI service error: {str(e)}"})
 
 
 @app.post("/website-copy")
