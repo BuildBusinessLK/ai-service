@@ -32,8 +32,8 @@ class BusinessAdvisorBody(BaseModel):
 # Allow Spring Boot backend to call this service
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8083", "http://localhost:3000"],
-    allow_methods=["POST", "GET"],
+    allow_origins=["*"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
