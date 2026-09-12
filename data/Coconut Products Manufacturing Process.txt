@@ -1,0 +1,1934 @@
+﻿COMPREHENSIVE DATASET FOR COCONUT PRODUCTS
+AI Training Data for SME Business Growth Assistant
+________________
+
+
+TABLE 1: MANUFACTURING PROCESSES
+COCONUT OIL (Virgin & Refined)
+Virgin Coconut Oil (VCO) - Cold Press Method
+Step 1: Coconut Selection & Dehusking
+- Duration: 2 hours per 100 coconuts
+- Equipment: Dehusking tools, manual or mechanical
+- Labor: 2-3 workers (unskilled)
+- Quality Standard: Select mature brown coconuts (11-12 months)
+- Input: 100 coconuts → Output: 60kg copra equivalent
+- Cost per step: $15-20
+
+
+Step 2: Splitting & Meat Extraction
+- Duration: 3 hours per 100 coconuts
+- Equipment: Splitting knives, meat extractors
+- Labor: 3-4 workers (semi-skilled)
+- Quality Standard: Clean white meat, no mold
+- Input: 100 coconuts → Output: 35-40kg fresh meat
+- Cost per step: $20-25
+
+
+Step 3: Grating/Grinding
+- Duration: 1 hour
+- Equipment: Coconut grater/grinder (electric)
+- Power: 2-3 kW
+- Labor: 1 operator (skilled)
+- Input: 35kg meat → Output: 35kg grated coconut
+- Cost per step: $5-8
+
+
+Step 4: Pressing (Cold Press)
+- Duration: 4-6 hours
+- Equipment: Hydraulic/Screw expeller press
+- Temperature: Below 40°C (cold press requirement)
+- Labor: 2 operators (skilled)
+- Yield: 65-70% oil extraction
+- Input: 35kg grated → Output: 23-25L oil
+- Cost per step: $30-40
+
+
+Step 5: Settling & Filtering
+- Duration: 24-48 hours settling + 2 hours filtering
+- Equipment: Settling tanks, filter press/cloth filters
+- Labor: 1 worker (semi-skilled)
+- Quality Standard: Clear, no sediment
+- Loss: 2-3%
+- Cost per step: $10-15
+
+
+Step 6: Bottling & Packaging
+- Duration: 3-4 hours per 100 bottles
+- Equipment: Filling machine, capping machine, labeling
+- Labor: 3-4 workers
+- Quality Standard: Food-grade bottles, airtight seal
+- Cost per step: $25-35
+Refined Coconut Oil (RBD)
+Additional Steps After Extraction:
+Step 7: Refining (Neutralization)
+- Duration: 4-6 hours
+- Equipment: Refining tanks, caustic soda treatment
+- Temperature: 60-70°C
+- Removes: Free fatty acids
+- Cost: $40-50 per batch
+
+
+Step 8: Bleaching
+- Duration: 2-3 hours
+- Equipment: Bleaching tanks, activated carbon/clay
+- Temperature: 90-110°C
+- Removes: Color pigments, impurities
+- Cost: $30-40 per batch
+
+
+Step 9: Deodorization
+- Duration: 4-6 hours
+- Equipment: Deodorizer, steam distillation
+- Temperature: 180-220°C under vacuum
+- Removes: Odor compounds
+- Cost: $50-70 per batch
+________________
+
+
+TODDY (Fresh & Fermented)
+Fresh Toddy Collection
+Step 1: Tree Preparation
+- Duration: 30 minutes per tree
+- Equipment: Climbing equipment, tapping knife
+- Labor: 1 skilled tapper
+- Quality: Select healthy, mature palms (15+ years)
+- Frequency: Daily tapping
+- Yield: 2-5 liters per tree per day
+- Cost: $2-3 per tree per day
+
+
+Step 2: Inflorescence Tapping
+- Duration: 15-20 minutes per tree
+- Technique: Slice thin layer from flower spadix
+- Tools: Sharp curved knife (sanitized)
+- Collection vessel: Clay pot or food-grade plastic
+- Best time: Early morning (4-6 AM)
+- Cost: Labor included in Step 1
+
+
+Step 3: Collection & Transportation
+- Duration: 2-3 hours for 50 trees
+- Collection: Every 12 hours (morning/evening)
+- Container: Food-grade containers
+- Temperature control: Keep cool (below 20°C)
+- Shelf life: 6-8 hours fresh
+- Cost: $10-15 per collection round
+
+
+Step 4: Filtering & Quality Check
+- Duration: 30 minutes per 50L
+- Equipment: Fine cloth/mesh filters
+- Quality checks: Color (whitish), smell (sweet), no fermentation
+- pH level: 7.0-7.5 (fresh)
+- Storage: Refrigerated if not immediate use
+- Cost: $5-8
+________________
+
+
+COIR FIBER
+Traditional Coir Processing
+Step 1: Husk Collection
+- Duration: Continuous
+- Source: Coconut processing units
+- Storage: Covered area, prevent moisture loss
+- Quality: Fresh husks preferred (within 7 days)
+- Input ratio: 1000 coconuts = 600kg husks
+- Cost: $0.05-0.10 per husk
+
+
+Step 2: Retting (Fermentation)
+- Duration: 6-12 months (traditional) OR 10-15 days (mechanical)
+- Method: 
+  * Traditional: Submerge in lagoons/pits
+  * Modern: Bacterial retting tanks
+- Equipment: Retting pits (10m x 5m x 2m)
+- Labor: 2-3 workers for loading/unloading
+- Output: Softened husks, fiber separation ready
+- Cost: $50-100 per ton
+
+
+Step 3: Defibering/Beating
+- Duration: 8 hours per ton
+- Equipment: 
+  * Manual: Wooden mallets
+  * Mechanical: Decorticator machine
+- Labor: 4-5 workers (manual) OR 2 operators (mechanical)
+- Output: 30-35% fiber yield from husks
+- Quality: Brown fiber (longer, stronger)
+- Cost: $80-120 per ton
+
+
+Step 4: Washing & Cleaning
+- Duration: 4 hours per ton
+- Equipment: Washing drums, water supply
+- Process: Remove pith, dust, short fibers
+- Water usage: 2000-3000L per ton
+- Quality standard: Clean, no impurities
+- Cost: $30-40 per ton
+
+
+Step 5: Drying
+- Duration: 48-72 hours (sun drying)
+- Space required: 100 sq.m per ton
+- Equipment: Drying yards, turning tools
+- Labor: 2 workers for turning/monitoring
+- Final moisture: 12-15%
+- Cost: $20-30 per ton
+
+
+Step 6: Grading & Baling
+- Duration: 6 hours per ton
+- Equipment: Baling press (hydraulic)
+- Grades: 
+  * Long fiber (25cm+): Premium
+  * Medium (15-25cm): Standard
+  * Short (<15cm): Low grade
+- Bale weight: 100-120 kg
+- Cost: $40-50 per ton
+________________
+
+
+JAGGERY (Coconut Palm)
+Traditional Jaggery Making
+Step 1: Toddy Collection for Jaggery
+- Duration: 4-5 hours (morning collection)
+- Volume: 50-100 liters per batch
+- Quality: Fresh toddy, not fermented
+- pH: 7.0-7.5
+- Storage: Immediate processing required
+- Cost: $25-40 per 100L
+
+
+Step 2: Filtering & Cleaning
+- Duration: 30 minutes
+- Equipment: Fine cloth filters
+- Process: Remove debris, insects, impurities
+- Loss: 2-3%
+- Cost: $5
+
+
+Step 3: Boiling & Concentration
+- Duration: 4-8 hours (depending on volume)
+- Equipment: 
+  * Large iron/brass vessel (200L capacity)
+  * Firewood hearth
+- Fuel: 40-50kg firewood per 100L toddy
+- Temperature: 100-110°C, constant stirring
+- Evaporation: 80-85% water removal
+- Output: 15-20kg jaggery per 100L toddy
+- Labor: 2 skilled workers (constant monitoring)
+- Cost: $30-50 per batch
+
+
+Step 4: Testing for Doneness
+- Duration: Continuous during boiling
+- Tests:
+  * Thread test: Forms hard thread between fingers
+  * Water test: Drops form hard ball in cold water
+  * Color: Golden brown to dark brown
+- Skill level: High (experience required)
+
+
+Step 5: Cooling & Molding
+- Duration: 2-4 hours
+- Equipment: 
+  * Wooden/metal molds (various shapes)
+  * Coconut oil for greasing
+- Process: Pour thick syrup into molds
+- Cooling: Natural air cooling
+- Output: Solid blocks/cakes
+- Cost: $10-15
+
+
+Step 6: Packaging
+- Duration: 2 hours per 50kg
+- Materials: Food-grade plastic wrap or paper
+- Labeling: Weight, date, ingredients
+- Shelf life: 6-12 months (cool, dry storage)
+- Cost: $8-12
+________________
+
+
+COCONUT VINEGAR
+Fermentation Process
+Step 1: Toddy Collection for Vinegar
+- Duration: Same as fresh toddy collection
+- Volume: 100-200L per batch
+- Quality: Can use slightly fermented toddy
+- Storage: Large fermentation vessels
+- Cost: $30-50 per 100L
+
+
+Step 2: Natural Fermentation (Alcoholic Phase)
+- Duration: 20-30 days
+- Equipment: Food-grade plastic/ceramic vessels (100-200L)
+- Temperature: 25-30°C (ambient)
+- Process: Natural yeasts convert sugars to alcohol
+- Alcohol content: 4-6%
+- Monitoring: Check smell, taste daily
+- Labor: 1 worker for daily checks
+- Cost: $15-20 (monitoring + utilities)
+
+
+Step 3: Acetic Acid Fermentation
+- Duration: 30-60 days
+- Equipment: Same vessels with cloth cover (air access)
+- Process: Acetobacter bacteria convert alcohol to acetic acid
+- Temperature: 25-32°C
+- Acidity target: 4-6% acetic acid
+- Monitoring: pH testing, taste
+- Cost: $20-30
+
+
+Step 4: Filtering & Clarification
+- Duration: 4-6 hours
+- Equipment: 
+  * Filter press or cloth filters
+  * Settling tanks
+- Process: Remove sediment, mother of vinegar
+- Clarity: Clear to slightly cloudy
+- Cost: $15-20
+
+
+Step 5: Pasteurization (Optional)
+- Duration: 2 hours
+- Equipment: Heating vessel with temperature control
+- Temperature: 65-70°C for 30 minutes
+- Purpose: Stop fermentation, extend shelf life
+- Cost: $20-25
+
+
+Step 6: Bottling
+- Duration: 3-4 hours per 100L
+- Equipment: Filling machine, bottles, caps
+- Quality: Food-grade glass bottles preferred
+- Labeling: Acidity %, ingredients, date
+- Shelf life: 2 years (sealed)
+- Cost: $30-40
+________________
+
+
+PALM SUGAR (Kithul/Palmyra)
+Similar to Jaggery with Differences
+Step 1: Sap Collection
+- Duration: 3-4 hours per day
+- Trees: Kithul palm or Palmyra palm
+- Yield: 3-8L per tree per day (higher than coconut)
+- Quality: Sweet, clear sap
+- Collection: Morning (5-8 AM)
+- Cost: $3-5 per tree per day
+
+
+Step 2-6: Similar to Jaggery Process
+- Differences:
+  * Higher sugar content (faster boiling)
+  * Lighter color (golden amber)
+  * Different flavor profile
+  * Can be made into granulated sugar
+
+
+Granulated Palm Sugar (Additional Steps):
+Step 7: Grinding
+- Equipment: Grinder/mill
+- Process: Break solid jaggery into powder
+- Particle size: Fine to medium
+- Cost: $15-20 per 50kg
+
+
+Step 8: Sieving & Packaging
+- Equipment: Industrial sieves
+- Grades: Fine, medium, coarse
+- Packaging: Moisture-proof bags
+- Cost: $10-15 per 50kg
+________________
+
+
+COCONUT CRAFTS
+Coconut Shell Products
+Product: Bowls, Cups, Spoons, Buttons
+
+
+Step 1: Shell Collection & Cleaning
+- Duration: 1 hour per 100 shells
+- Process: Remove fiber, wash, dry
+- Quality: Crack-free, clean shells
+- Cost: $5-8
+
+
+Step 2: Cutting & Shaping
+- Duration: 15-30 minutes per piece
+- Equipment: 
+  * Band saw or hand saw
+  * Lathe machine (for bowls)
+  * Grinding tools
+- Labor: Skilled craftsperson
+- Cost: $2-5 per piece
+
+
+Step 3: Smoothing & Polishing
+- Duration: 10-20 minutes per piece
+- Equipment: Sandpaper (various grits), polishing wheel
+- Finish: Food-grade polish or natural coconut oil
+- Cost: $1-2 per piece
+
+
+Step 4: Decoration (Optional)
+- Duration: 20-60 minutes per piece
+- Techniques: Carving, inlay, painting, burning
+- Skill: High artistic skill
+- Cost: $5-20 per piece
+
+
+Step 5: Quality Check & Packaging
+- Inspection: No cracks, smooth finish
+- Packaging: Individual wrapping, gift boxes
+- Cost: $2-3 per piece
+Coir Products (Mats, Ropes, Brushes)
+Coir Rope Making:
+Step 1: Fiber Preparation
+- Cleaned, dried coir fiber
+- Grading: Use medium to long fiber
+
+
+Step 2: Spinning
+- Equipment: Spinning wheel or motorized spinner
+- Process: Twist fibers into yarn
+- Thickness: 2mm to 10mm
+- Output: 50-100m per hour
+- Cost: $0.50-1.00 per meter
+
+
+Step 3: Rope Making (Twisting)
+- Equipment: Rope making machine
+- Process: Twist 2-3 yarns together
+- Strength: 2-3 ply ropes
+- Output: 30-50m per hour
+- Cost: $1.50-3.00 per meter
+
+
+Coir Mat Making:
+Step 1: Loom Setup
+- Equipment: Traditional handloom or power loom
+- Warp preparation: Coir yarn on loom
+- Size: Standard 60cm x 90cm or custom
+
+
+Step 2: Weaving
+- Duration: 2-4 hours per mat (handloom)
+- Labor: Skilled weaver
+- Patterns: Plain, decorative designs
+- Cost: $5-10 per mat
+
+
+Step 3: Finishing
+- Trimming edges
+- Quality check
+- Packaging
+- Cost: $2-3 per mat
+________________
+
+
+TABLE 2: SME STARTUP REQUIREMENTS
+COCONUT OIL PRODUCTION (Small Scale)
+Infrastructure Requirements
+Factory Space:
+- Minimum: 500 sq.ft (processing area)
+- Additional: 200 sq.ft (storage)
+- Location: Industrial zone or agricultural area
+- Rent: $200-400/month (rural areas)
+- Power: 3-phase electricity, 10-15 kW capacity
+
+
+Utilities:
+- Water: 500-1000L per day
+- Electricity: 8-12 hours per day
+- Backup generator: Optional ($1500-3000)
+Machinery & Equipment Costs
+Essential Equipment:
+1. Coconut Dehusking Machine: $500-800
+2. Coconut Splitting Machine: $800-1200
+3. Meat Grater/Grinder: $1000-1500
+4. Oil Expeller Press (small): $3000-5000
+5. Filter Press: $800-1200
+6. Settling Tanks (stainless steel): $600-1000
+7. Bottling Equipment: $1500-2500
+8. Storage Tanks: $800-1500
+
+
+Total Machinery: $9,000-15,000
+
+
+Supporting Equipment:
+- Weighing scales: $100-200
+- Temperature control devices: $150-300
+- Quality testing kit: $200-400
+- Packaging materials storage: $300-500
+
+
+Total Supporting: $750-1,400
+Raw Material Requirements (Monthly)
+For 1000L Virgin Coconut Oil Production:
+
+
+Coconuts: 
+- Quantity: 15,000-18,000 nuts
+- Cost: $0.20-0.30 per nut
+- Total: $3,000-5,400/month
+
+
+Packaging Materials:
+- Glass bottles (500ml): 2000 bottles x $0.40 = $800
+- Caps/lids: 2000 x $0.05 = $100
+- Labels: 2000 x $0.03 = $60
+- Cartons: 200 x $0.50 = $100
+- Total: $1,060/month
+
+
+Consumables:
+- Electricity: $200-350/month
+- Water: $30-50/month
+- Labor (5 workers): $1500-2500/month
+- Transport: $200-400/month
+- Miscellaneous: $150-250/month
+- Total: $2,080-3,550/month
+Licensing & Registration
+Required Licenses:
+1. Business Registration: $50-100
+2. Food Production License: $200-500
+3. Health Department Approval: $100-300
+4. Local Authority Permit: $50-150
+5. Environmental Clearance: $150-400
+6. Factory Registration: $100-250
+7. Quality Certification (Optional - ISO, HACCP): $2000-5000
+
+
+Total Licensing: $650-1,700 (without ISO)
+With ISO/HACCP: $2,650-6,700
+
+
+Annual Renewals: $200-400
+Working Capital Requirements
+Initial 3-Month Buffer:
+- Raw materials: $9,000-16,200
+- Labor: $4,500-7,500
+- Utilities: $600-1,000
+- Marketing: $1,000-2,000
+- Miscellaneous: $1,000-1,500
+Total Working Capital: $16,100-28,200
+Total Startup Investment - Virgin Coconut Oil
+Machinery & Equipment: $9,750-16,400
+Initial Licensing: $650-1,700
+Factory Setup (rent, renovation): $1,500-3,000
+Working Capital (3 months): $16,100-28,200
+
+
+TOTAL: $28,000-49,300
+
+
+Conservative Estimate: $35,000
+________________
+
+
+TODDY COLLECTION & SALES
+Startup Requirements
+Equipment:
+1. Climbing Equipment: $200-400
+2. Tapping Knives (10): $100-200
+3. Collection Pots (100): $300-600
+4. Transport Containers: $400-700
+5. Refrigeration (optional): $1000-2000
+6. Bicycle/Motorcycle: $500-1500
+
+
+Total Equipment: $2,500-5,400
+
+
+Access Rights:
+- Lease coconut/palmyra trees: $2-5 per tree per month
+- 50 trees needed for viable business
+- Monthly lease: $100-250
+
+
+Licensing:
+- Toddy Tapping License: $50-150 annual
+- Food Handling Permit: $100-200
+- Health Certificate: $50-100
+Total: $200-450
+
+
+Working Capital:
+- 1 month advance tree lease: $100-250
+- Equipment maintenance: $100-200
+- Transport costs: $100-200
+Total: $300-650
+
+
+TOTAL STARTUP: $3,000-6,500
+________________
+
+
+COIR FIBER PRODUCTION
+Medium-Scale Unit
+Land Requirement:
+- Retting pits area: 1000 sq.m
+- Drying yard: 500 sq.m
+- Processing shed: 300 sq.m
+- Storage: 200 sq.m
+Total: 2000 sq.m (lease $300-600/month)
+
+
+Machinery:
+1. Defibering Machine: $5,000-8,000
+2. Washing Equipment: $2,000-3,500
+3. Baling Press: $3,000-5,000
+4. Loading Equipment: $1,500-2,500
+5. Small tools: $500-1,000
+
+
+Total Machinery: $12,000-20,000
+
+
+Infrastructure:
+- Retting pit construction: $2,000-4,000
+- Drying yard (concrete): $3,000-5,000
+- Processing shed: $4,000-7,000
+- Water supply system: $1,000-2,000
+
+
+Total Infrastructure: $10,000-18,000
+
+
+Working Capital (3 months):
+- Husk purchase: $3,000-5,000
+- Labor (8 workers): $3,000-5,000
+- Utilities: $400-700
+- Transport: $600-1,000
+
+
+Total Working Capital: $7,000-11,700
+
+
+TOTAL STARTUP: $29,000-49,700
+________________
+
+
+JAGGERY PRODUCTION
+Small-Scale Unit
+Equipment:
+1. Large Boiling Vessel (200L): $400-700
+2. Firewood Hearth/Stove: $300-500
+3. Stirring Tools: $50-100
+4. Molds (100 pieces): $200-400
+5. Storage Containers: $300-500
+6. Packaging Equipment: $200-400
+
+
+Total Equipment: $1,450-2,600
+
+
+Raw Materials (Monthly):
+- Toddy purchase: 3000L x $0.40 = $1,200
+- Firewood: 1500kg x $0.10 = $150
+- Packaging: $200
+- Labor (3 workers): $900-1,500
+
+
+Total Monthly: $2,450-3,050
+
+
+Licensing:
+- Food Production License: $200-400
+- Health Permit: $100-200
+Total: $300-600
+
+
+Working Capital (2 months):
+- $4,900-6,100
+
+
+TOTAL STARTUP: $6,650-9,300
+________________
+
+
+COCONUT VINEGAR PRODUCTION
+Small Unit
+Equipment:
+1. Fermentation Vessels (500L x 4): $800-1,500
+2. Filtering Equipment: $500-800
+3. Bottling Machine (semi-auto): $1,500-2,500
+4. pH Testing Kit: $150-300
+5. Storage Tanks: $600-1,000
+6. Glass Bottles & Packaging: $1,000-1,500
+
+
+Total Equipment: $4,550-7,600
+
+
+Raw Materials (Monthly):
+- Toddy: 2000L x $0.30 = $600
+- Bottles (2000): $600
+- Labels & packaging: $150
+- Labor (2 workers): $600-1,000
+
+
+Total Monthly: $1,950-2,350
+
+
+Production Note:
+- 2-3 month fermentation means delayed revenue
+- Need 6-month working capital
+
+
+Working Capital (6 months):
+- $11,700-14,100
+
+
+TOTAL STARTUP: $16,250-21,700
+________________
+
+
+COCONUT CRAFTS (Shell Products)
+Micro Enterprise
+Equipment:
+1. Band Saw: $500-1,000
+2. Lathe Machine (small): $800-1,500
+3. Grinding/Polishing Tools: $400-700
+4. Hand Tools Set: $200-400
+5. Workbench: $150-300
+
+
+Total Equipment: $2,050-3,900
+
+
+Workspace:
+- Small workshop: 200 sq.ft
+- Rent: $100-200/month
+
+
+Raw Materials (Monthly):
+- Coconut shells: 500 x $0.10 = $50
+- Sandpaper & polish: $100
+- Packaging: $150
+
+
+Total Monthly: $300
+
+
+Working Capital (3 months):
+- $900
+
+
+TOTAL STARTUP: $3,050-5,000
+________________
+
+
+TABLE 3: RAW MATERIAL COSTS (2024-2025 Prices - Sri Lanka)
+PRIMARY RAW MATERIALS
+Coconuts
+Pricing by Grade (per nut):
+- Premium (export quality): $0.30-0.40
+- Grade A (domestic, large): $0.20-0.30
+- Grade B (medium): $0.15-0.25
+- Grade C (small/mixed): $0.10-0.18
+
+
+Bulk Purchase Discounts:
+- 1,000-5,000 nuts: 5-8% discount
+- 5,000-10,000 nuts: 10-12% discount
+- 10,000+ nuts: 15-20% discount
+
+
+Seasonal Variations:
+- Peak season (Aug-Dec): Prices 10-15% lower
+- Off-season (Feb-May): Prices 15-25% higher
+
+
+By Region (per 1000 nuts):
+- Kurunegala: $180-250
+- Puttalam: $170-240
+- Gampaha: $200-280
+- Colombo: $220-300
+Coconut Husks
+Fresh Husks:
+- Per husk: $0.05-0.10
+- Per ton: $80-150
+- Bulk (10+ tons): $70-120/ton
+
+
+Dried Husks:
+- Per ton: $100-180
+
+
+Source:
+- Direct from coconut oil mills: Cheaper
+- Collectors/middlemen: 20-30% markup
+Toddy (Raw Sap)
+Fresh Toddy:
+- Per liter: $0.30-0.50 (direct from tapper)
+- Per liter: $0.50-0.80 (through middleman)
+
+
+Bulk Purchase (100L+):
+- $0.25-0.40/L (direct)
+
+
+Quality Grades:
+- Morning collection (sweet): Premium price
+- Evening collection: 10-15% lower
+- Slightly fermented: 20-30% lower (for vinegar)
+
+
+Seasonal:
+- Dry season: 10-15% price increase
+- Rainy season: Normal/slight decrease
+Copra (Dried Coconut Meat)
+Market Prices (per kg):
+- Grade 1 (white, dry): $1.20-1.50
+- Grade 2 (slightly brown): $1.00-1.30
+- Grade 3 (mixed quality): $0.80-1.10
+
+
+Oil Content: 63-68%
+Yield: 1kg copra → 0.65L oil
+
+
+Bulk Pricing (per ton):
+- Grade 1: $1,100-1,400
+- Grade 2: $900-1,200
+________________
+
+
+SECONDARY MATERIALS
+Packaging Materials
+Glass Bottles:
+- 250ml: $0.25-0.35 each
+- 500ml: $0.35-0.50 each
+- 1000ml: $0.50-0.75 each
+- Bulk (1000+): 15-20% discount
+
+
+Plastic Bottles (Food Grade):
+- 500ml PET: $0.15-0.25
+- 1000ml PET: $0.20-0.35
+
+
+Caps/Lids:
+- Plastic screw caps: $0.03-0.05 each
+- Metal caps: $0.05-0.08 each
+
+
+Labels:
+- Paper labels: $0.02-0.04 each
+- Printed stickers: $0.03-0.06 each
+
+
+Cartons:
+- Small (6 bottles): $0.30-0.50
+- Medium (12 bottles): $0.40-0.70
+- Large (24 bottles): $0.60-1.00
+Energy Costs
+Firewood:
+- Per kg: $0.08-0.12
+- Per ton: $70-110
+- Coconut shells (fuel): $40-60/ton
+
+
+Electricity (Industrial Rate):
+- Per kWh: $0.08-0.12
+- Fixed charge: $15-30/month
+- Peak hours surcharge: +30%
+
+
+LPG (if used):
+- 12.5kg cylinder: $15-20
+- Industrial bulk: $1.20-1.50/kg
+Labor Costs (Monthly - Sri Lanka)
+Unskilled Workers:
+- Daily wage: $8-12
+- Monthly (26 days): $208-312
+
+
+Semi-Skilled Workers:
+- Daily wage: $12-18
+- Monthly: $312-468
+
+
+Skilled Workers:
+- Daily wage: $18-30
+- Monthly: $468-780
+
+
+Specialized (Tappers, Craftsmen):
+- Daily wage: $25-40
+- Monthly: $650-1,040
+
+
+Benefits & Compliance:
+- EPF (Employer): 12% of salary
+- ETF (Employer): 3% of salary
+- Total labor cost: Salary + 15%
+________________
+
+
+MACHINERY COSTS (NEW)
+Oil Processing Equipment
+Expeller Press Machines:
+- Manual/Small (5-10 kg/hr): $1,500-3,000
+- Semi-Automatic (20-30 kg/hr): $3,000-5,000
+- Automatic (50-100 kg/hr): $7,000-12,000
+- Industrial (200+ kg/hr): $15,000-30,000
+
+
+Copra Dryers:
+- Solar dryer (small): $500-1,200
+- Gas dryer (medium): $2,000-4,000
+- Industrial dryer: $8,000-15,000
+
+
+Refining Equipment (for RBD Oil):
+- Refining unit (small): $10,000-20,000
+- Bleaching unit: $5,000-10,000
+- Deodorizer: $8,000-15,000
+- Complete RBD plant: $30,000-60,000
+Coir Processing Equipment
+Defibering Machines:
+- Manual-assist: $1,000-2,000
+- Semi-automatic: $3,000-5,000
+- Fully automatic: $6,000-10,000
+
+
+Fiber Cleaning Machines:
+- Small unit: $1,500-3,000
+- Industrial: $5,000-8,000
+
+
+Baling Press:
+- Manual: $500-1,000
+- Hydraulic (small): $2,000-4,000
+- Industrial: $5,000-10,000
+
+
+Spinning Machines (for rope):
+- Manual spinner: $200-500
+- Power spinner: $1,000-2,000
+- Rope making machine: $3,000-6,000
+Bottling & Packaging Equipment
+Filling Machines:
+- Manual: $300-800
+- Semi-automatic: $1,500-3,000
+- Automatic: $5,000-12,000
+
+
+Capping Machines:
+- Manual: $200-500
+- Semi-automatic: $800-1,500
+- Automatic: $2,500-5,000
+
+
+Labeling Machines:
+- Manual: $150-400
+- Semi-automatic: $1,000-2,000
+- Automatic: $3,000-6,000
+
+
+Complete Packaging Line (small):
+- $8,000-18,000
+Craft Making Equipment
+Woodworking Tools:
+- Band saw (small): $500-1,000
+- Lathe machine: $800-2,000
+- Grinding machine: $400-900
+- Polishing machine: $300-700
+
+
+Hand Tools Set:
+- Basic set: $150-300
+- Professional set: $400-800
+
+
+Laser Engraver (for designs):
+- Entry level: $1,500-3,000
+- Professional: $5,000-10,000
+________________
+
+
+TABLE 4: BUSINESS STRATEGIES
+MARKET ENTRY STRATEGIES
+Product Differentiation
+Virgin Coconut Oil:
+Strategy 1: Organic Certification
+- Cost: $2,000-5,000 (initial certification)
+- Price premium: 25-40% higher
+- Target: Health-conscious, export markets
+- ROI timeline: 12-18 months
+
+
+Strategy 2: Cold-Pressed Premium
+- Marketing: Emphasize traditional methods, nutrient retention
+- Packaging: Premium glass bottles, attractive labels
+- Price premium: 15-25% higher
+- Target: Urban consumers, gift market
+
+
+Strategy 3: Value Addition
+- Flavored oils (garlic, chili, herbs)
+- Coconut oil-based cosmetics
+- Small sample sizes for testing
+- Price premium: 30-50%
+
+
+Strategy 4: B2B Focus
+- Supply to restaurants, bakeries, spas
+- Bulk packaging
+- Contract manufacturing
+- Stable long-term revenue
+
+
+Coir Products:
+Strategy 1: Eco-Friendly Branding
+- Position as sustainable, biodegradable
+- Target: Environmental conscious consumers
+- Certifications: Eco-labels, organic
+- Price premium: 20-30%
+
+
+Strategy 2: Designer Products
+- Collaborate with designers
+- Modern patterns, colors
+- Urban home décor market
+- Price premium: 50-100%
+
+
+Strategy 3: Export Focus
+- Target: Europe, USA, Australia
+- Meet international standards
+- Higher profit margins: 40-60%
+
+
+Toddy/Palm Products:
+Strategy 1: Artisanal Positioning
+- Emphasize traditional, handmade
+- Limited production, premium quality
+- Storytelling marketing
+- Price premium: 30-50%
+
+
+Strategy 2: Health Benefits Focus
+- Low glycemic index (jaggery, palm sugar)
+- Natural probiotics (vinegar)
+- Diabetic-friendly positioning
+- Medical certifications
+
+
+Strategy 3: Tourism Market
+- Hotel/restaurant supply
+- Tourist gift packs
+- Cultural experience packages
+- Higher margins: 50-80%
+________________
+
+
+PRICING STRATEGIES
+Cost-Plus Pricing Model
+Virgin Coconut Oil (500ml bottle):
+
+
+Production Costs:
+- Raw materials (coconuts): $2.50
+- Processing labor: $0.80
+- Energy/utilities: $0.40
+- Packaging: $0.50
+- Overheads (rent, admin): $0.30
+Total Cost: $4.50
+
+
+Markup Strategy:
+- Minimum (15%): Sell at $5.18
+- Standard (30%): Sell at $5.85
+- Premium (50%): Sell at $6.75
+- Organic certified (70%): Sell at $7.65
+
+
+Wholesale vs Retail:
+- Direct retail: Full margin
+- Wholesaler: 25-30% discount = $4.10-4.40
+- Distributor: 35-40% discount = $3.50-3.90
+- Still profitable at 35% discount
+Competitive Pricing
+Market Analysis - Virgin Coconut Oil (500ml):
+
+
+Local Brands:
+- Low-end: $4.50-5.50
+- Mid-range: $6.00-7.50
+- Premium: $8.00-10.00
+
+
+Imported Brands:
+- $10.00-15.00
+
+
+SME Positioning Options:
+1. Penetration Pricing (Enter market):
+   - Price: $5.50-6.00 (below mid-range)
+   - Goal: Gain market share quickly
+   - Duration: 6-12 months
+   - Then adjust to $6.50-7.00
+
+
+2. Premium Positioning:
+   - Price: $7.50-8.50
+   - Requirements: Superior quality, branding, certifications
+   - Target: High-income consumers
+
+
+3. Value Pricing:
+   - Price: $5.00-5.50
+   - Strategy: Good quality, minimal packaging, direct sales
+   - Target: Price-conscious buyers
+Dynamic Pricing
+Seasonal Adjustments:
+
+
+High Season (Aug-Dec):
+- Raw material costs: -15%
+- Keep prices stable
+- Increase profit margin by 10-15%
+
+
+Low Season (Feb-May):
+- Raw material costs: +20%
+- Options:
+  a) Maintain price, accept lower margin
+  b) Increase price by 10% (risk volume loss)
+  c) Promotions to maintain volume
+
+
+Festival Seasons:
+- Sinhala/Tamil New Year (April): +5-10% pricing
+- Christmas/New Year: Special gift packs, +15-20%
+- Vesak/Poson: Religious-themed packaging, +5%
+
+
+Bulk Discounts:
+- 5-10 units: 5% off
+- 10-25 units: 10% off
+- 25-50 units: 15% off
+- 50+ units: 20% off (negotiate)
+________________
+
+
+MARKETING & SALES STRATEGIES
+Digital Marketing (Low-Cost)
+Social Media Marketing:
+Platform: Facebook, Instagram, TikTok
+Budget: $50-200/month
+
+
+Content Strategy:
+- Product photos: 3-4 per week
+- Process videos: 1-2 per week (behind-the-scenes)
+- Customer testimonials: 2-3 per week
+- Health tips, recipes: Daily posts
+- Live sessions: Weekly (Q&A, demos)
+
+
+Engagement:
+- Respond to comments within 2 hours
+- Run polls and contests monthly
+- User-generated content campaigns
+- Influencer partnerships (micro-influencers): $50-150 per post
+
+
+Facebook/Instagram Ads:
+- Budget: $100-200/month
+- Target: Urban areas, 25-45 age, health-conscious
+- ROI target: 3:1 (earn $3 for every $1 spent)
+
+
+Website/E-commerce:
+- Basic website: $300-800 (one-time)
+- Maintenance: $20-50/month
+- E-commerce platform: Daraz, Kapruka, own site
+- Listing fees: Free to 5% commission
+
+
+Google My Business:
+- Free listing
+- Local SEO optimization
+- Customer reviews management
+Traditional Marketing
+Sampling Campaigns:
+- Location: Supermarkets, exhibitions, fairs
+- Cost: $100-300 per event
+- Conversion rate: 10-20%
+- ROI: Positive if 30+ sales per event
+
+
+Retail Partnerships:
+- Approach: 50-100 local stores
+- Margins: Give 20-25% to retailer
+- Support: Provide POS materials, samples
+- Payment terms: 30-45 days credit
+
+
+Exhibitions & Trade Fairs:
+- Local fairs: $200-500 per booth
+- National exhibitions: $800-1,500
+- International: $3,000-8,000
+- Generate: Leads, bulk orders, distributor contacts
+
+
+Direct Sales:
+- Farmers markets: Weekly stalls, $20-50 rent
+- Home delivery service: WhatsApp/phone orders
+- Subscription model: Monthly delivery, 10% discount
+
+
+Print Marketing (Selective):
+- Brochures/flyers: $100-200 (1000 pieces)
+- Local newspaper ads: $50-150 per ad
+- Magazine features: $200-500 per page
+- Business cards: $20-40 (500 pieces)
+B2B Strategies
+Target Sectors:
+1. Hotels & Restaurants
+   - Approach: Direct sales visits, samples
+   - Volume: 10-50L per month per client
+   - Margins: Lower (15-20%) but stable
+
+
+2. Bakeries & Food Manufacturers
+   - Volume: 50-200L per month
+   - Requirements: Consistent quality, timely delivery
+   - Contracts: 6-12 month agreements
+
+
+3. Spas & Salons
+   - Product: Virgin coconut oil, cosmetic grade
+   - Volume: 5-20L per month
+   - Margins: 25-30%
+
+
+4. Retail Chains
+   - Target: Cargills, Keells, Arpico
+   - Requirements: Barcodes, HACCP, consistency
+   - Volume: 100-500 units per chain per month
+   - Margins: 30-40% to retailer
+
+
+5. Export Buyers
+   - Markets: Middle East, Europe, Australia
+   - Requirements: International certifications, quality standards
+   - Volume: 1000-5000L per shipment
+   - Margins: 50-70% (after shipping costs)
+________________
+
+
+SCALING STRATEGIES
+Growth Phases
+Phase 1: Micro (Month 1-6)
+- Production: 200-500L oil/month OR 50-100kg crafts
+- Revenue: $1,500-4,000/month
+- Focus: Quality, local market, feedback
+- Team: 2-3 people (owner + helpers)
+- Goal: Break-even, establish reputation
+
+
+Phase 2: Small (Month 7-18)
+- Production: 500-1000L oil/month OR 100-200kg crafts
+- Revenue: $4,000-8,000/month
+- Focus: Retail partnerships, branding, consistency
+- Team: 5-8 people
+- Investment: Better equipment, packaging
+- Goal: 20-30% profit margin
+
+
+Phase 3: Medium (Month 19-36)
+- Production: 1000-3000L oil/month OR 500kg crafts
+- Revenue: $8,000-25,000/month
+- Focus: B2B, export exploration, certifications
+- Team: 15-25 people
+- Investment: Automation, quality systems
+- Goal: Geographic expansion, product line extension
+
+
+Phase 4: Established (Year 3+)
+- Production: 3000-10,000L oil/month
+- Revenue: $25,000-80,000/month
+- Focus: Brand building, export, franchising
+- Team: 30-100 people
+- Investment: Factory expansion, R&D
+- Goal: Regional/national brand recognition
+Diversification Timeline
+Year 1:
+- Master ONE product (e.g., virgin coconut oil)
+- Perfect quality and processes
+- Build initial customer base
+
+
+Year 2:
+- Add 2-3 related products
+  * If oil: Add refined oil, coconut milk
+  * If crafts: Add different product types
+- Increase production capacity by 50-100%
+- Start B2B relationships
+
+
+Year 3:
+- Launch 3-5 new products
+- Enter new geographic markets
+- Consider backward integration (own coconut farm/trees)
+- Explore export markets
+
+
+Year 4+:
+- Full product portfolio (10+ SKUs)
+- Multiple revenue streams (retail, B2B, export, online)
+- Consider forward integration (own retail outlets)
+- Franchise or licensing opportunities
+________________
+
+
+TABLE 5: SUPPLY CHAIN & DISTRIBUTION
+RAW MATERIAL SOURCING
+Coconut Sourcing Strategies
+Option 1: Direct from Farmers
+Advantages:
+- Lowest cost (save 15-30% vs middlemen)
+- Quality control at source
+- Build long-term relationships
+- Fair pricing for farmers
+
+
+Process:
+- Identify 20-50 coconut farmers within 50km
+- Sign annual/seasonal contracts
+- Agree on quality standards and pricing formula
+- Provide advance payment (10-20%)
+- Arrange collection schedule (weekly/bi-weekly)
+
+
+Pricing Model:
+- Base price + quality premium + transport
+- Example: $0.18 base + $0.02 premium + $0.02 transport = $0.22/nut
+- Volume discount for farmers: Buy entire harvest
+
+
+Challenges:
+- Logistics management
+- Quality variations
+- Seasonal availability
+- Payment terms (farmers need quick payment)
+
+
+Option 2: Through Collectors/Aggregators
+Advantages:
+- Simplified logistics
+- Consistent supply
+- Less capital tied up
+- Quality pre-sorted
+
+
+Process:
+- Identify reliable collectors in region
+- Establish quality requirements
+- Agree on payment terms (usually 7-15 days)
+- Regular orders (weekly/monthly)
+
+
+Pricing:
+- 20-30% markup vs direct sourcing
+- Example: $0.25-0.28/nut
+
+
+Option 3: Auction/Wholesale Markets
+Advantages:
+- Spot purchases as needed
+- No long-term commitments
+- Price negotiation opportunities
+
+
+Process:
+- Visit weekly coconut auctions
+- Purchase on spot (cash payment)
+- Arrange transport
+
+
+Pricing:
+- Variable (market-dependent)
+- Average: $0.22-0.32/nut
+
+
+Challenges:
+- No guaranteed supply
+- Quality inconsistency
+- Price volatility
+
+
+Option 4: Own Plantation (Long-term)
+Investment:
+- Land lease: $500-1,500/acre/year
+- Or purchase: $10,000-30,000/acre
+- Coconut palms: 60-80 per acre
+- Yield: 40-60 nuts per tree/year = 2,400-4,800 nuts/acre/year
+
+
+Timeline:
+- New planting: 5-6 years to first harvest
+- Existing plantation lease: Immediate
+
+
+Break-even:
+- 5-10 acres needed for small oil unit
+- 10-20 acres for medium unit
+Toddy Sourcing
+Option 1: Contract with Toddy Tappers
+- Sign agreement with 10-20 tappers
+- Each tapper manages 20-30 trees
+- Daily collection arrangement
+- Price: $0.30-0.40/L
+- Payment: Weekly
+
+
+Option 2: Lease Palm Trees
+- Lease 50-100 coconut/palmyra palms
+- Hire own tapper
+- Full control over quality and timing
+- Cost: $2-5/tree/month
+- Tapper salary: $650-1,000/month
+
+
+Option 3: Purchase from Toddy Collectors
+- Through middlemen
+- Price: $0.50-0.70/L (higher)
+- Quality may vary
+- No consistent supply guarantee
+Husk/Fiber Sourcing for Coir
+Primary Sources:
+1. Coconut Oil Mills
+   - Large volumes available
+   - Price: $70-100/ton
+   - Regular supply
+   - Requires transport arrangement
+
+
+2. Coconut Processing Centers
+   - Desiccated coconut factories
+   - Fresh husks preferred
+   - Price: $80-120/ton
+
+
+3. Direct Collection
+   - From temples, households, coconut vendors
+   - Labor-intensive
+   - Very low cost: $30-50/ton
+   - Quality control needed
+
+
+Supply Contracts:
+- Minimum 10 tons/month for stability
+- Quality specifications (fresh, not moldy)
+- Payment terms: 15-30 days
+- Delivery schedule: Weekly/bi-weekly
+________________
+
+
+STORAGE & INVENTORY MANAGEMENT
+Raw Material Storage
+Coconuts (Fresh):
+- Storage duration: 7-10 days maximum
+- Facility: Covered, ventilated shed
+- Capacity: 500-1,000 nuts per 100 sq.ft
+- Handling: Avoid dropping (causes cracks)
+- Loss rate: 2-3% (natural drying, damage)
+- Inventory policy: Just-in-time (weekly purchases)
+
+
+Copra:
+- Storage duration: 2-3 months
+- Facility: Dry, moisture-free warehouse
+- Packaging: Jute bags (50kg each)
+- Stack height: Maximum 10 bags
+- Loss rate: 1-2% (moisture, pests)
+- Inventory: 1-month buffer stock
+
+
+Husks:
+- Fresh husks: Use within 7 days (for quality fiber)
+- Dried husks: Can store 3-6 months
+- Storage: Covered area, off ground
+- Space: 1 ton requires 15-20 cubic meters
+- Loss: 5-7% (decomposition if wet)
+
+
+Toddy:
+- Storage: Refrigerated (below 10°C)
+- Duration: 6-8 hours (fresh)
+- Container: Food-grade plastic/stainless steel
+- Inventory: Daily purchase, daily use (for jaggery)
+- For vinegar: Immediate transfer to fermentation
+
+
+Finished Products:
+Virgin Coconut Oil:
+- Storage: Cool, dark place (below 25°C)
+- Container: Stainless steel drums or glass
+- Duration: 12-18 months
+- Inventory: 2-week stock + buffer
+
+
+Jaggery:
+- Storage: Cool, dry, airtight containers
+- Duration: 6-12 months
+- Packaging: Vacuum sealed preferred
+- Inventory: 1-month stock
+
+
+Coir Products:
+- Storage: Dry warehouse
+- Duration: Unlimited (if dry)
+- Space: 1 ton compressed = 3-4 cubic meters
+- Inventory: 1-2 month stock
+Inventory Optimization
+Economic Order Quantity (EOQ):
+
+
+For Coconuts (example):
+- Annual requirement: 180,000 nuts
+- Ordering cost: $50 per order (transport, admin)
+- Holding cost: $0.02 per nut per month
+
+
+EOQ = √(2 × Annual Demand × Ordering Cost / Holding Cost)
+EOQ = √(2 × 180,000 × 50 / (0.02 × 12))
+EOQ ≈ 8,660 nuts per order
+
+
+Optimal: Order ~9,000 nuts every 2 weeks
+
+
+Safety Stock:
+- Lead time: 2-3 days
+- Daily usage: 600 nuts
+- Safety stock: 1,800-2,000 nuts
+- Reorder point: (Daily usage × Lead time) + Safety stock
+- Reorder at: 3,800-4,000 nuts remaining
+________________
+
+
+LOGISTICS & DISTRIBUTION
+Transportation
+Raw Material Collection:
+Vehicle Options:
+1. Three-wheeler/Tuk-tuk
+   - Capacity: 500-800 nuts OR 200-300kg
+   - Cost: $8-15 per trip (within 20km)
+   - Suitable for: Micro SMEs, short distances
+
+
+2. Pickup Truck
+   - Capacity: 2,000-3,000 nuts OR 1-1.5 tons
+   - Cost: $30-50 per trip (50km radius)
+   - Suitable for: Small-medium SMEs
+
+
+3. Small Lorry
+   - Capacity: 5,000-8,000 nuts OR 3-4 tons
+   - Cost: $80-120 per trip (100km radius)
+   - Suitable for: Medium-large SMEs
+
+
+Own Vehicle vs Rental:
+Own Pickup (Used):
+- Purchase: $8,000-15,000
+- Monthly cost: $300-500 (fuel, maintenance, insurance, driver)
+- Break-even: If 20+ trips per month
+
+
+Rental:
+- Pay per trip
+- No maintenance hassles
+- Flexible
+- Better for <20 trips/month
+
+
+Product Distribution:
+Local Distribution (within city):
+- Delivery van/tuk-tuk
+- 10-20 deliveries per day
+- Cost per delivery: $2-5
+
+
+Regional (50-200km):
+- Courier service: $3-8 per parcel (5kg)
+- Own vehicle: $100-200 per trip (bulk)
+- Frequency: Weekly/bi-weekly
+
+
+National:
+- Courier companies (Pronto, DHL local): $5-12 per parcel
+- Bus parcel service: $2-5 (slower but cheap)
+- Own distribution: Cost-effective if 100+ parcels/week
+
+
+Export:
+- Sea freight: $800-1,500 per container (20ft)
+- Air freight: $3-6 per kg
+- Lead time: Sea 4-8 weeks, Air 3-7 days
+Distribution Channels
+Channel 1: Direct to Consumer
+Advantages:
+- Highest margins (30-50%)
+- Customer feedback
+- Brand building
+
+
+Methods:
+- Own shop/stall
+- Home delivery
+- Online store
+- Farmers markets
+
+
+Volume: 20-30% of production
+
+
+Channel 2: Retail Stores
+Advantages:
+- Volume sales
+- Brand visibility
+- Market expansion
+
+
+Process:
+- Approach 50-100 stores
+- Provide POS materials
+- Merchandiser visits weekly
+- Invoice credit: 30-45 days
+
+
+Margins: Give 20-25% to retailer
+Volume: 40-50% of production
+
+
+Channel 3: Wholesalers/Distributors
+Advantages:
+- Large volume
+- Wide geographic reach
+- Low marketing cost
+
+
+Process:
+- Identify 5-10 regional distributors
+- Territory exclusivity
+- Credit period: 30-60 days
+- Marketing support
+
+
+Margins: 30-40% discount to distributor
+Volume: 30-40% of production
+
+
+Channel 4: B2B (Hotels, Restaurants)
+Advantages:
+- Stable orders
+- Premium pricing possible (if quality)
+- Payment terms negotiable
+
+
+Process:
+- Direct sales team
+- Quality samples
+- Contractual agreements
+- Weekly/bi-weekly deliveries
+
+
+Margins: 15-25% (lower margin, higher volume)
+Volume: 10-20% of production
+
+
+Channel 5: Export
+Advantages:
+- Highest prices (50-100% premium)
+- Large orders
+- Currency advantage
+
+
+Process:
+- Find buyers via trade fairs, export councils
+- Meet international standards
+- Documentation (export license, certificates)
+- Payment: L/C or advance payment
+
+
+Challenges:
+- High entry barriers (certifications)
+- Minimum order quantities (1000-5000L)
+- Shipping logistics
+
+
+Volume: 10-30% (once established)
+________________
+
+
+EXPORT PROCEDURES
+Export Requirements for Coconut Products
+Essential Certifications:
+1. Export License
+   - Issuing authority: Sri Lanka Export Development Board (EDB)
+   - Cost: $50-150
+   - Duration: 1-3 months
+   - Renewal: Annual
+
+
+2. Good Manufacturing Practice (GMP)
+   - Issuing authority: Department of Food Control
+   - Cost: $500-1,500
+   - Inspection required
+   - Valid: 2 years
+
+
+3. HACCP Certification
+   - Issuing authority: Accredited bodies (SGS, Bureau Veritas)
+   - Cost: $2,000-5,000
+   - Duration: 3-6 months
+   - Valid: 3 years
+   - Mandatory for: EU, USA, Australia
+
+
+4. ISO 22000 (Food Safety)
+   - Cost: $3,000-8,000
+   - Optional but preferred by buyers
+   - Valid: 3 years
+
+
+5. Organic Certification (if applicable)
+   - Certifying bodies: Control Union, IMO
+   - Cost: $2,000-5,000 annual
+   - Plantation inspection required
+
+
+Market-Specific:
+For EU:
+- HACCP mandatory
+- Trace ability documentation
+- Heavy metal testing
+- Pesticide residue testing
+- Cost: $500-1,000 per shipment (testing)
+
+
+For USA:
+- FDA registration: $50-100
+- FSMA compliance
+- Importer information required
+
+
+For Middle East:
+- Halal certification: $200-500
+- Some countries: Certificate of origin
+
+
+For Australia:
+- AQIS approval
+- Biosecurity clearance
+
+
+Documents Required per Shipment:
+1. Commercial invoice
+2. Packing list
+3. Bill of lading / Airway bill
+4. Certificate of origin
+5. Phytosanitary certificate (if required)
+6. Quality/test certificates
+7. Insurance certificate
+8. GSP Form A (for duty preference)
+
+
+Export Process Timeline:
+1. Find buyer / receive order: Ongoing
+2. Finalize terms & L/C: 2-4 weeks
+3. Production & quality testing: 2-4 weeks
+4. Documentation preparation: 1 week
+5. Customs clearance: 2-3 days
+6. Shipping: 2-8 weeks (sea) or 3-7 days (air)
+7. Payment realization: 1-4 weeks after delivery
+
+
+Total: 8-18 weeks from order to payment
+Export Pricing & Costing
+Example: Virgin Coconut Oil Export to EU
+
+
+FOB Price Calculation:
+- Production cost (500ml): $4.50
+- Export packaging (better quality): $0.80
+- Quality testing & certificates: $0.30
+- Documentation: $0.15
+- Domestic transport to port: $0.20
+- Port handling & customs: $0.25
+- Agent commission (5%): $0.35
+- Profit margin (30%): $2.00
+
+
+FOB Colombo Price: $8.55 per unit
+
+
+CIF Price (Buyer's port):
+- FOB price: $8.55
+- Sea freight: $0.40 (per unit in container)
+- Insurance: $0.10
+CIF Price: $9.05
+
+
+Retail Price in EU:
+- CIF: $9.05
+- Import duty (varies): $0.50-1.00
+- Importer margin (30%): $2.70-3.00
+- Retailer margin (40%): $5.00-5.50
+Final retail: $17-19
+
+
+Competitiveness:
+- Local EU brands: $18-25
+- Your product: Competitive if quality is good
+________________
+
+
+TABLE 6: GOVERNMENT REGULATIONS & COMPLIANCE
+BUSINESS REGISTRATION
+Step-by-Step Registration Process
+Step 1: Business Name Registration
+Agency: Registrar of Companies (ROC)
+Process:
+- Search name availability online
+- Reserve name: $10-20
+- Register business: 
+  * Sole proprietorship: $25-50
+  * Partnership: $50-100
+  * Private company: $100-300
+- Duration: 1-2 weeks
+- Required: ID copies, address proof
+
+
+Step 2: Tax Registration
+Agency: Inland Revenue Department
+Types:
+a) Income Tax File Number
+   - Free registration
+   - Required for all businesses
+   - Online application
+
+
+b) VAT Registration (if turnover > 12 million LKR)
+   - Fee: $50-100
+   - Monthly/quarterly returns required
+   - VAT rate: 15% (subject to change)
+
+
+c) Economic Service Charge (ESC)
+   - Threshold: Varies by business type
+   - Quarterly payment: 0.25-0.5% of turnover
+
+
+Documents:
+- Business registration certificate
+- Bank account details
+- ID copies of owners
+
+
+Step 3: Local Authority License
+Agency: Municipal Council / Pradeshiya Sabha
+Purpose: Permission to operate in location
+Cost: $50-200 annual (depends on area and business size)
+Requirements:
+- Business registration
+- Location approval
+- Fire safety compliance (if applicable)
+Duration: 2-4 weeks
+
+
+Step 4: EPF/ETF Registration
+Agency: EPF Department, ETF Board
+When: Once you hire employees
+EPF: Employer 12% + Employee 8%
+ETF: Employer 3%
+Registration: Free
+Monthly submissions required
+
+
+Required Documents Summary:
+- National ID / Passport
+- Proof of address
+- Business plan (for some registrations)
+- Bank account in business name
+- Passport-size photos
+________________
+
+
+FOOD PRODUCTION LICENSES
+Mandatory for All Food Products
+1. Food Production License
+Issuing Authority: Food Control Unit, Ministry of Health
+Requirements:
+- Registered business
+- Proper factory/production facility
+- Water quality test report
+- Health certificates of workers
+- GMP compliance
+
+
+Process:
+a) Submit application with docs
+b) Factory inspection by health officer
+c) Corrections if any
+d) License issuance
+
+
+Cost: $100-400 (based on production scale)
+Duration: 2-3 months
+Validity: Annual renewal
+Renewal cost: $50-200
+
+
+Factory Requirements:
+- Separate areas: raw material, processing, packing, storage
+- Proper ventilation and lighting
+- Pest control measures
+- Worker facilities (toilets, handwashing)
+- Waste disposal system
+- Clean water supply
+
+
+2. Health Certificates for Workers
+Requirement: All workers handling food
+Issued by: Medical Officer of Health (MOH)
+Process:
+- Medical examination at government hospital
+- Tests: General health, communicable diseases
+- Cost: $5-10 per person
+- Validity: Annual
+
+
+3. Water Quality Certificate
+Required for: Production and cleaning
+Issued by: National Water Supply & Drainage Board or approved lab
+Tests: Bacterial count, pH, dissolved solids, heavy metals
+Cost: $50-100 per test
+Frequency: Quarterly or annual (depending on source)
+
+
+4. Product Label Approval
+Authority: Food Control Unit
+Requirements:
+- All ingredients listed
+- Nutritional information (if required)
+- Net weight
+- Manufacturing date, expiry date
+- License number
+- Manufacturer details
+- Storage instructions
+
+
+Cost: $50-150
+Submit: Label design for approval before printing

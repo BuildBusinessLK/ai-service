@@ -70,10 +70,9 @@ def _get_unsupported_terms(question: str) -> list[str]:
 def _unsupported_message(terms: list[str] | None = None) -> str:
     topic = ", ".join(terms) if terms else "that sector"
     return (
-        "Sorry — BuildBusinessLK currently has verified data only for coconut (pol), "
-        "palmyrah/thal, and kithul. We do not have enough dataset coverage to answer about "
-        f"{topic} yet. I will flag this to the team so we can add that data soon. "
-        "In the meantime, I am happy to help with coconut, palmyrah, or kithul questions."
+        "I’m sorry, I only have good, verified data for coconut (pol), palmyrah/thal, "
+        "and kithul right now. I can’t answer in depth about "
+        f"{topic} yet, but I’m happy to help with coconut, palmyrah, or kithul questions."
     )
 
 
@@ -132,6 +131,7 @@ Your communication style:
 
 Your job:
 - YOU synthesise insight from the local knowledge base and the user/business context below.
+- If the user context contains an ML recommendation summary, treat it as a trusted guidance signal and use it to shape the answer.
 - Do NOT tell the owner to "conduct research" as a standalone task.
   Instead, share what you already know from the knowledge base, then give concrete next steps.
 - If the question is vague, ask 1–3 short clarifying questions BEFORE giving generic advice.
@@ -225,7 +225,7 @@ def get_qa_chain() -> SMEAdvisorChain:
     # MMR retrieval — fetch_k=16 candidates, return top 6 diverse results
     retriever = vectorstore.as_retriever(
         search_type="mmr",
-        search_kwargs={"k": 6, "fetch_k": 16},
+        search_kwargs={"k": 3, "fetch_k": 8},
     )
 
     llm = get_llm(temperature=0.3)

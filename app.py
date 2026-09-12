@@ -19,6 +19,8 @@ from rag.query import get_qa_chain
 
 load_dotenv()
 
+load_dotenv()
+
 app = FastAPI(title="BuildBusinessLK AI Service", version="3.0")
 service_state = SimpleNamespace(qa_chain=None, initialization_error=None)
 
@@ -92,6 +94,94 @@ def _format_profiles(user_profile: Optional[dict], business_profile: Optional[di
     else:
         parts.append("Business profile: not provided.")
     return "\n\n".join(parts)
+
+
+def _extract_number(text: str, pattern: str) -> Optional[int]:
+    match = re.search(pattern, text)
+    if not match:
+        return None
+    value = match.group(1).replace(",", "")
+    if value.isdigit():
+        return int(value)
+    return None
+
+
+def _parse_experience(text: str) -> Optional[str]:
+    if re.search(r"\b(beginner|new|no experience|fresh|first time)\b", text):
+        return "beginner"
+    if re.search(r"\b(advanced|experienced|expert|professional|many years|5\+|6\+|7\+|8\+|9\+)\b", text):
+        return "advanced"
+    if re.search(r"\b(intermediate|some experience|a few years|couple years|2 years|3 years|4 years)\b", text):
+        return "intermediate"
+    year_match = re.search(r"(\d+)\s*(?:years|yrs?)\b", text)
+    if year_match:
+        years = int(year_match.group(1))
+        if years <= 1:
+            return "beginner"
+        if years <= 4:
+            return "intermediate"
+        return "advanced"
+    return None
+
+
+def _parse_business_profile(question: str) -> dict[str, Any]:
+    text = question.lower()
+    sector = None
+    for candidate in ["palmyrah", "kithul", "coconut"]:
+        if candidate in text:
+            sector = candidate
+            break
+
+    budget = _extract_number(text, r"(?:budget|investment|invest|capital|lkr|rs|rupees)[^\d]{0,20}([0-9][0-9,]*)")
+    monthly_yield = _extract_number(text, r"(?:yield|production|output|sap|liters|kgs|kg)[^\d]{0,20}([0-9][0-9,]*)")
+    employees = _extract_number(text, r"(?:employee|staff|worker|team)[^\d]{0,20}([0-9][0-9,]*)")
+    experience = _parse_experience(text)
+
+    # Fallback if yield is described using only a number and budget is present
+    if monthly_yield is None:
+        numbers = re.findall(r"([0-9][0-9,]*)", text)
+        if sector and budget is not None and len(numbers) >= 2:
+            budget_text = str(budget)
+            if numbers[0].replace(",", "") == budget_text:
+                monthly_yield = int(numbers[1].replace(",", ""))
+
+    if employees is None:
+        employees = 1
+
+    profile: dict[str, Any] = {}
+    if sector:
+        profile["sector"] = sector
+    if budget is not None:
+        profile["budget"] = budget
+    if monthly_yield is not None:
+        profile["monthly_yield"] = monthly_yield
+    if employees is not None:
+        profile["employees"] = employees
+    if experience:
+        profile["experience"] = experience
+    else:
+        profile["experience"] = "intermediate"
+        profile["experience_assumed"] = "intermediate"
+
+    return profile
+
+
+def _build_ml_context(business_profile: dict[str, Any]) -> str:
+    if not business_profile:
+        return ""
+    values = []
+    for key in ["sector", "budget", "monthly_yield", "employees", "experience", "recommendedBusiness"]:
+        if key in business_profile:
+            values.append(f"{key}: {business_profile[key]}")
+    if "experience_assumed" in business_profile:
+        values.append("experience_assumed: assumed intermediate because it was not provided")
+    summary = "Business profile summary: " + "; ".join(values) if values else ""
+    if "recommendedBusiness" in business_profile:
+        summary += (
+            "\nUse the ML recommendation above as a guiding suggestion when answering the user. "
+            "If the user is asking for the best product or business option, mention the recommended business first."
+        )
+    return summary
 
 
 def _parse_json_object(text: str) -> dict[str, Any]:
@@ -198,7 +288,7 @@ def _looks_like_echoed_prompt(text: str) -> bool:
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health():
-    return {"status": "ok", "model": OLLAMA_MODEL}
+    return {"status": "ok", "provider": MODEL_PROVIDER, "model": MODEL_NAME}
 
 
 @app.post("/chat")
@@ -273,6 +363,83 @@ def website_copy(body: WebsiteCopyBody):
         "marketingText": str(data.get("marketingText", "")).strip(),
     }
 
+
+@app.post("/business-advisor")
+def business_advisor(body: BusinessAdvisorBody):
+    missing_fields = []
+    business_profile = body.businessProfile or {}
+
+    for field_name in ["sector", "budget", "monthly_yield", "employees", "experience"]:
+        value = business_profile.get(field_name)
+        if value is None or (isinstance(value, str) and not value.strip()):
+            missing_fields.append(field_name)
+
+    if missing_fields:
+        return {
+            "message": (
+                "Please complete your business profile with the following fields: "
+                f"{', '.join(missing_fields)}."
+            )
+        }
+
+    try:
+        recommendation = recommend_business(
+            sector=business_profile["sector"],
+            budget=int(business_profile["budget"]),
+            monthly_yield=int(business_profile["monthly_yield"]),
+            employees=int(business_profile["employees"]),
+            experience=business_profile["experience"],
+        )
+    except ValueError as exc:
+        return {"message": str(exc)}
+    except Exception:
+        return {
+            "message": (
+                "Unable to generate a recommendation with the provided profile. "
+                "Please check the values and try again."
+            )
+        }
+
+    user_context = _format_profiles(body.userProfile, business_profile)
+    prompt = _build_business_advisor_prompt(recommendation, str(business_profile.get("sector", "")))
+    result = qa_chain.invoke({
+        "input": prompt,
+        "chat_history": [],
+        "user_context": user_context,
+    })
+
+    return {
+        "recommendedBusiness": recommendation,
+        "guidance": result["answer"],
+    }
+
+
+@app.post("/recommend-business")
+def recommend(body: RecommendationBody):
+
+    recommendation = recommend_business(
+        sector=body.sector,
+        budget=body.budget,
+        monthly_yield=body.monthly_yield,
+        employees=body.employees,
+        experience=body.experience
+    )
+
+    return {
+        "recommendation": recommendation
+    }
+
+
+# @app.post("/ad-generate")
+def ad_generate(body: AdGenerationBody):
+    """
+    Generates structured advertisements for multiple platforms.
+    """
+
+    prompt = body.prompt or "Write a marketing advertisement."
+
+    business_profile = body.businessProfile or {}
+    user_profile = body.userProfile or {}
 @app.post("/ad-generate")
 def generate_ad(body: AdGenerationBody):
     try:
