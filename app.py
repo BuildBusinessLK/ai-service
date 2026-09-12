@@ -115,7 +115,7 @@ def _build_business_advisor_prompt(recommended_business: str, sector: str) -> st
 # Endpoints
 # ──────────────────────────────────────────────
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok", "model": OLLAMA_MODEL}
 
