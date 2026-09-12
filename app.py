@@ -1,10 +1,11 @@
 import json
 import os
 import re
+from types import SimpleNamespace
+from typing import Any, List, Optional
 
 os.environ.setdefault("FASTEMBED_CACHE_PATH", "/tmp")
 os.environ.setdefault("HF_HOME", "/tmp")
-from typing import Any, List, Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -288,7 +289,15 @@ def _looks_like_echoed_prompt(text: str) -> bool:
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health():
-    return {"status": "ok", "provider": MODEL_PROVIDER, "model": MODEL_NAME}
+    provider = os.getenv("LLM_PROVIDER", "groq" if os.getenv("GROQ_API_KEY") else "ollama")
+    model = os.getenv("GROQ_MODEL" if provider == "groq" else "OLLAMA_MODEL", "groq/compound-mini" if provider == "groq" else "llama3")
+    return {
+        "status": "ok",
+        "service": "BuildBusinessLK AI Service",
+        "provider": provider,
+        "model": model,
+        "vectorstore": os.path.exists(os.getenv("VECTORSTORE_PATH", "rag/vectorstore")),
+    }
 
 
 @app.post("/chat")
@@ -300,7 +309,29 @@ def chat(body: ChatBody):
     """
     try:
         chain = _get_chain()
+
+        parsed_ml = _parse_business_profile(body.question)
+        ml_profile = dict(body.businessProfile or {})
+        ml_profile.update(parsed_ml)
+        if ml_profile.get("sector") and ml_profile.get("budget") and ml_profile.get("monthly_yield"):
+            try:
+                from ml.predict import recommend_business
+                rec = recommend_business(
+                    sector=str(ml_profile["sector"]),
+                    budget=int(ml_profile["budget"]),
+                    monthly_yield=int(ml_profile["monthly_yield"]),
+                    employees=int(ml_profile.get("employees", 1)),
+                    experience=str(ml_profile.get("experience", "intermediate")),
+                )
+                ml_profile["recommendedBusiness"] = rec
+            except Exception:
+                pass
+
+        ml_context = _build_ml_context(ml_profile)
         user_context = _format_profiles(body.userProfile, body.businessProfile)
+        if ml_context:
+            user_context += "\n\n" + ml_context
+
         result = chain.invoke({
             "input": body.question,
             "chat_history": [_message_to_dict(m) for m in body.chat_history],
@@ -430,16 +461,6 @@ def recommend(body: RecommendationBody):
     }
 
 
-# @app.post("/ad-generate")
-def ad_generate(body: AdGenerationBody):
-    """
-    Generates structured advertisements for multiple platforms.
-    """
-
-    prompt = body.prompt or "Write a marketing advertisement."
-
-    business_profile = body.businessProfile or {}
-    user_profile = body.userProfile or {}
 @app.post("/ad-generate")
 def generate_ad(body: AdGenerationBody):
     try:
@@ -517,10 +538,7 @@ Campaign brief:
         ])
 
         try:
-            llm = ChatOllama(
-                model=OLLAMA_MODEL,
-                temperature=0.5
-            )
+            llm = get_llm(temperature=0.5)
         except Exception as e:
             traceback.print_exc()
             return {

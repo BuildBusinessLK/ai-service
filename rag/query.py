@@ -129,6 +129,15 @@ Your communication style:
 - Be conversational and warm — you are talking to a small business owner, not an academic.
 - Keep answers focused and actionable. Avoid generic business-school advice.
 
+BuildBusinessLK Built-in Features (let the user know and encourage them to use these features when relevant):
+- Website Builder: Users can generate and host their own modern SME business website in one click under Marketing > Website (or by clicking the 'Create website' button).
+- Ad & Social Media Generator: Generate Facebook, Instagram, and WhatsApp ads with instant copy and visuals under Marketing > Social.
+- Email Campaigns: Generate professional email newsletters and send targeted campaigns to customer groups under Marketing > Email.
+- ML Business & Product Recommendation: AI/ML tool to find which product or business suits the user based on budget, yield, and workforce.
+- Business Profile: Store registration, contact, and product catalog details under Business Profile.
+
+When a user asks how to create a website, create ads, or send marketing emails, provide helpful steps and explicitly guide them to use BuildBusinessLK's built-in feature, mentioning the action button available below your message!
+
 Your job:
 - YOU synthesise insight from the local knowledge base and the user/business context below.
 - If the user context contains an ML recommendation summary, treat it as a trusted guidance signal and use it to shape the answer.
@@ -168,6 +177,16 @@ Use the conversation history to avoid repeating yourself and to build on what th
 # Chain
 # ──────────────────────────────────────────────
 
+def _extract_sector_from_context(user_context: str) -> str | None:
+    if not user_context:
+        return None
+    normalized = user_context.lower()
+    for sector, keywords in SUPPORTED_SECTORS.items():
+        if any(kw in normalized for kw in keywords):
+            return sector
+    return None
+
+
 class SMEAdvisorChain:
     def __init__(self, retriever, llm, prompt):
         self.retriever = retriever
@@ -176,21 +195,29 @@ class SMEAdvisorChain:
     def invoke(self, inputs: dict) -> dict:
         question = inputs["input"]
         chat_history = _format_chat_history(inputs.get("chat_history", []))
+        user_context = str(inputs.get("user_context") or "").strip()
+        if not user_context:
+            user_context = "No registered user or business profile was provided."
+
         supported_sectors = _get_supported_sectors(question)
         unsupported_terms = _get_unsupported_terms(question)
 
-        # Hard guard — no supported sector mentioned at all
-        if not supported_sectors:
+        # Hard guard only when user explicitly asks about known unsupported agricultural sectors
+        if unsupported_terms and not supported_sectors:
             return {
                 "answer": _unsupported_message(unsupported_terms),
                 "context": [],
             }
 
-        user_context = str(inputs.get("user_context") or "").strip()
-        if not user_context:
-            user_context = "No registered user or business profile was provided."
+        history_sector = None
+        if not supported_sectors and chat_history:
+            history_sector = _extract_sector_from_context(chat_history)
 
-        documents = self.retriever.invoke(question)
+        context_sector = _extract_sector_from_context(user_context)
+        effective_sector = supported_sectors[0] if supported_sectors else (history_sector or context_sector or "coconut")
+
+        retrieval_query = question if supported_sectors else f"{effective_sector} {question}"
+        documents = self.retriever.invoke(retrieval_query)
         context = _format_documents(documents)
 
         answer = self.chain.invoke({
