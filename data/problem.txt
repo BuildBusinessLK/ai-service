@@ -1,0 +1,169 @@
+ 1. Key Problems in Coconut / Kithul / Palmyrah Industries (Sri Lanka)
+ A. Farming & Production Problems
+Low productivity of old palm trees (low yield per tree)
+Climate change (drought, irregular rainfall)
+Pest & disease issues (especially coconut mites, fungal diseases)
+Lack of modern cultivation knowledge among small farmers
+Poor replanting / aging plantations
+Limited access to quality seedlings
+
+ Impact: unstable raw material supply
+
+B. Price & Market Problems
+Highly volatile farm-gate prices
+Middlemen controlling pricing
+Farmers not knowing real market/export prices
+No real-time price transparency
+
+ Impact: farmers sell cheap, exporters gain more margin
+
+ C. Processing & Value Addition Problems
+Lack of modern machinery (small-scale producers)
+Poor standardization of products (jaggery, oil, treacle)
+Inconsistent quality between batches
+Low shelf-life due to packaging issues
+ D. Supply Chain Problems
+Weak logistics from rural areas
+High transport cost
+Delays in collection and processing
+No digital tracking of supply chain
+ E. Certification & Export Problems
+Complicated certification process (HACCP, GMP, ISO)
+Lack of knowledge about export documentation
+Difficulty accessing buyers
+Poor branding of SME products
+
+Related institutions:
+
+Coconut Development Authority (CDA)
+Export Development Board (EDB)
+Kithul Development Board
+Palmyrah Development Board
+ F. Finance Problems
+Lack of SME credit access
+High collateral requirements
+Seasonal cash flow instability
+No credit scoring system for farmers
+ G. Data & Knowledge Problems (VERY IMPORTANT for your AI agent)
+Data is scattered across government PDFs and websites
+No unified dashboard for:
+prices
+yield
+export demand
+certification rules
+Farmers rely on word-of-mouth
+
+ THIS is where your AI agent becomes powerful
+
+ 2. How Your AI Agent Should Handle These Problems
+
+Think of your system as:
+
+“AI Business Assistant for Palm Industry SMEs”
+
+ A. Core AI Modules
+1. 📊 Market Intelligence Agent
+Predict coconut / kithul / palmyrah prices
+Show best selling time
+Compare district-level prices
+2.  Farming Advisory Agent
+Suggest:
+fertilizer schedule
+pest control steps
+best palm varieties
+seasonal guidance
+3.  Processing & Quality Agent
+Guide:
+HACCP / GMP compliance steps
+packaging standards
+shelf-life improvement
+4.  Export Assistant Agent
+Auto-generate:
+export document checklist
+HS code suggestions
+buyer country recommendations
+guide users step-by-step export process
+5.  Finance Assistant Agent
+Estimate:
+production cost
+profit margins
+loan eligibility suggestions
+6.  Buyer Matching Agent
+Match SMEs with:
+export buyers
+local wholesalers
+supermarkets
+ Example AI Response Flow
+
+User: “How do I export kithul jaggery?”
+
+AI Agent:
+
+Check registration (CDA / KDB)
+Recommend certification (HACCP/GMP)
+Suggest packaging standards
+Show HS Code + documentation list
+Connect to EDB buyer network
+3. Data You Should Collect for Your AI System
+
+You should structure your database like this:
+
+ A. Production Data
+crop type (coconut/kithul/palmyrah)
+district
+yield per tree
+seasonal output
+ B. Price Data
+farm gate price
+wholesale price
+export price
+monthly trends
+ C. Product Data
+product type (oil, jaggery, treacle, flour)
+processing method
+cost per unit
+shelf life
+ D. Export Data
+HS code
+destination country
+export volume
+demand trends
+ E. Certification Data
+HACCP status
+GMP requirements
+SLS standards
+export eligibility
+F. Farmer/SME Data
+farm size
+production capacity
+equipment available
+location
+4. Where to Get More Real Data (Sri Lanka)
+
+You should extend your dataset from:
+
+🇱🇰 Government Sources
+Coconut Development Authority
+Coconut Research Institute
+Coconut Cultivation Board
+Export Development Board
+Kithul Development Board
+Palmyrah Development Board
+ International Data Sources (for AI forecasting)
+FAOSTAT (global agriculture yield data)
+ITC Trade Map (export/import trends)
+World Bank commodity data
+UN Comtrade database
+ 5. Best AI Idea for Your Project (Very Important)
+
+You are basically building:
+
+ “Sri Lanka Palm Industry AI Copilot”
+
+Features that make it strong:
+Chat-based advisor (/ask)
+Price prediction dashboard
+Export step-by-step guide
+SME business planner
+Certification assistant
+Buyer matching system
