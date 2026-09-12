@@ -1,19 +1,37 @@
 import os
 import re
 
-# Keep HuggingFace in offline mode once ingested — no live model downloads during inference.
-os.environ.setdefault("HF_HUB_OFFLINE", "1")
-os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+# Set writable cache directory for serverless environments (Vercel has read-only root)
+os.environ.setdefault("FASTEMBED_CACHE_PATH", "/tmp")
+os.environ.setdefault("HF_HOME", "/tmp")
 
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import ChatOllama
+
+try:
+    from langchain_community.embeddings import FastEmbedEmbeddings
+    USE_FASTEMBED = True
+except ImportError:
+    from langchain_huggingface import HuggingFaceEmbeddings
+    USE_FASTEMBED = False
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from llm_factory import get_llm
 
-DB_PATH = os.getenv("VECTORSTORE_PATH", "rag/vectorstore")
+DEFAULT_DB_PATH = os.path.join(os.path.dirname(__file__), "vectorstore")
+DB_PATH = os.getenv("VECTORSTORE_PATH", DEFAULT_DB_PATH)
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+
+# Decide offline mode: only force offline mode if HF_FORCE_OFFLINE is explicitly set.
+force_offline = os.getenv("HF_FORCE_OFFLINE", "").lower() in ("1", "true", "yes")
+if force_offline:
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+    LOCAL_FILES_ONLY = True
+else:
+    os.environ.pop("HF_HUB_OFFLINE", None)
+    os.environ.pop("TRANSFORMERS_OFFLINE", None)
+    LOCAL_FILES_ONLY = False
 
 # ──────────────────────────────────────────────
 # Domain guard
@@ -190,10 +208,13 @@ class SMEAdvisorChain:
 
 
 def get_qa_chain() -> SMEAdvisorChain:
-    embeddings = HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL,
-        model_kwargs={"local_files_only": True},
-    )
+    if USE_FASTEMBED:
+        embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5", cache_dir="/tmp")
+    else:
+        embeddings = HuggingFaceEmbeddings(
+            model_name=EMBEDDING_MODEL,
+            model_kwargs={"local_files_only": LOCAL_FILES_ONLY},
+        )
 
     vectorstore = FAISS.load_local(
         DB_PATH,
@@ -207,10 +228,7 @@ def get_qa_chain() -> SMEAdvisorChain:
         search_kwargs={"k": 6, "fetch_k": 16},
     )
 
-    llm = ChatOllama(
-        model=OLLAMA_MODEL,
-        temperature=0.3,   # slightly lower for more consistent, grounded answers
-    )
+    llm = get_llm(temperature=0.3)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", SYSTEM_PROMPT),

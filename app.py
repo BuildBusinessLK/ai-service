@@ -1,7 +1,9 @@
 import json
 import os
 import re
-from types import SimpleNamespace
+
+os.environ.setdefault("FASTEMBED_CACHE_PATH", "/tmp")
+os.environ.setdefault("HF_HOME", "/tmp")
 from typing import Any, List, Optional
 
 from dotenv import load_dotenv
@@ -10,7 +12,7 @@ import traceback
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama import ChatOllama
+from llm_factory import get_llm
 from pydantic import BaseModel, Field
 
 from rag.query import get_qa_chain
@@ -23,16 +25,20 @@ service_state = SimpleNamespace(qa_chain=None, initialization_error=None)
 # Allow Spring Boot backend to call this service
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8083", "http://localhost:3000"],
-    allow_methods=["POST", "GET"],
+    allow_origins=["*"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialise RAG chain at startup (loads FAISS index + embeddings once)
-try:
-    service_state.qa_chain = get_qa_chain()
-except Exception as exc:  # pragma: no cover - defensive startup fallback
-    service_state.initialization_error = str(exc)
+from fastapi.responses import JSONResponse
+
+qa_chain = None
+
+def _get_chain():
+    global qa_chain
+    if qa_chain is None:
+        qa_chain = get_qa_chain()
+    return qa_chain
 
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 
@@ -190,7 +196,7 @@ def _looks_like_echoed_prompt(text: str) -> bool:
 # Endpoints
 # ──────────────────────────────────────────────
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok", "model": OLLAMA_MODEL}
 
@@ -202,20 +208,19 @@ def chat(body: ChatBody):
     Accepts the user question + chat history + user/business profile context.
     Returns the AI answer as {"message": "..."}
     """
-    user_context = _format_profiles(body.userProfile, body.businessProfile)
-    if service_state.qa_chain is None:
-        fallback = (
-            "The AI service is currently running in fallback mode because the local knowledge model could not be loaded. "
-            "Please try again shortly or check the local AI service logs."
-        )
-        return {"message": fallback}
-
-    result = service_state.qa_chain.invoke({
-        "input": body.question,
-        "chat_history": [_message_to_dict(m) for m in body.chat_history],
-        "user_context": user_context,
-    })
-    return {"message": result["answer"]}
+    try:
+        chain = _get_chain()
+        user_context = _format_profiles(body.userProfile, body.businessProfile)
+        result = chain.invoke({
+            "input": body.question,
+            "chat_history": [_message_to_dict(m) for m in body.chat_history],
+            "user_context": user_context,
+        })
+        return {"message": result["answer"]}
+    except Exception as e:
+        import logging, traceback
+        logging.error(f"Chat error: {e}\n{traceback.format_exc()}")
+        return JSONResponse(status_code=500, content={"message": f"AI service error: {str(e)}"})
 
 
 @app.post("/website-copy")
@@ -227,11 +232,7 @@ def website_copy(body: WebsiteCopyBody):
     bp = body.businessProfile or {}
     raw = json.dumps(bp, ensure_ascii=False, indent=2)
 
-    try:
-        llm = ChatOllama(model=OLLAMA_MODEL, temperature=0.35)
-    except Exception:
-        llm = None
-
+    llm = get_llm(temperature=0.35)
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
