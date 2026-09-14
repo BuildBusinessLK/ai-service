@@ -1,0 +1,30 @@
+{
+  "model_version": "product-recommender-v1",
+  "dataset_version": "business-training-v1",
+  "training_samples": 220,
+  "features": [
+    "sector",
+    "budget_lkr",
+    "monthly_yield_kg",
+    "employees",
+    "experience_years"
+  ],
+  "classes": [
+    "Coconut Chips",
+    "Coconut Flour",
+    "Coconut Milk",
+    "Desiccated Coconut",
+    "Kithul Flour",
+    "Kithul Jaggery",
+    "Kithul Treacle",
+    "Palmyrah Jaggery",
+    "Palmyrah Sugar",
+    "Palmyrah Treacle",
+    "Virgin Coconut Oil"
+  ],
+  "top1_accuracy": 0.7273,
+  "top3_accuracy": 1.0,
+  "macro_f1": 0.689,
+  "cv_mean_accuracy": 0.7818,
+  "cv_std_accuracy": 0.0636
+}

@@ -1,71 +1,144 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional
+import joblib
+import pandas as pd
+
+from ml.feasibility import calculate_feasibility
 
 ROOT_DIR = Path(__file__).resolve().parent
-MODELS_DIR = ROOT_DIR.parent / "models"
-MODEL_PATH = MODELS_DIR / "recommendation_model.pkl"
-SECTOR_ENCODER_PATH = MODELS_DIR / "sector_encoder.pkl"
-EXPERIENCE_ENCODER_PATH = MODELS_DIR / "experience_encoder.pkl"
-TARGET_ENCODER_PATH = MODELS_DIR / "target_encoder.pkl"
+MODEL_PATH = ROOT_DIR / "models" / "product_recommender_v1.joblib"
+# Legacy fallback path
+LEGACY_PATH = ROOT_DIR.parent / "models" / "product_recommender_v1.joblib"
 
-_model = None
-_sector_encoder = None
-_experience_encoder = None
-_target_encoder = None
-_loaded = False
+MODEL_VERSION = "product-recommender-v1"
+
+_PIPELINE = None
 
 
-def _load_artifacts():
-    global _model, _sector_encoder, _experience_encoder, _target_encoder, _loaded
-    if _loaded:
-        return
+def load_model():
+    global _PIPELINE
+    if _PIPELINE is not None:
+        return _PIPELINE
     try:
-        import joblib
-        if MODEL_PATH.exists() and SECTOR_ENCODER_PATH.exists():
-            _model = joblib.load(MODEL_PATH)
-            _sector_encoder = joblib.load(SECTOR_ENCODER_PATH)
-            _experience_encoder = joblib.load(EXPERIENCE_ENCODER_PATH)
-            _target_encoder = joblib.load(TARGET_ENCODER_PATH)
-    except Exception:
-        pass
-    _loaded = True
+        if MODEL_PATH.exists():
+            _PIPELINE = joblib.load(MODEL_PATH)
+        elif LEGACY_PATH.exists():
+            _PIPELINE = joblib.load(LEGACY_PATH)
+    except Exception as e:
+        print(f"Warning: Failed to load ML model: {e}")
+        _PIPELINE = None
+    return _PIPELINE
 
 
-def _normalize_string(value: Any) -> str:
-    val = str(value or "").strip().lower()
-    if val == "palmyra":
+# Initialize on import
+load_model()
+
+
+def normalize_sector(sector: Any) -> str:
+    s = str(sector or "").strip().lower()
+    if "palmyr" in s:
         return "palmyrah"
-    return val
+    if "kithul" in s or "kitul" in s:
+        return "kithul"
+    if "coconut" in s or "coco" in s or "pol" in s:
+        return "coconut"
+    return s or "coconut"
 
 
-def _rule_based_recommendation(sector: str, budget: int, monthly_yield: int, employees: int, experience: str) -> str:
-    s = _normalize_string(sector)
-    b = int(budget) if budget else 250000
+def normalize_experience(exp: Any) -> float:
+    if isinstance(exp, (int, float)):
+        return max(0.0, float(exp))
+    s = str(exp or "").strip().lower()
+    if "beginner" in s or "no exp" in s or "new" in s or "none" in s:
+        return 0.5
+    if "advanced" in s or "expert" in s or "senior" in s or "5+" in s:
+        return 5.0
+    if "intermediate" in s or "some" in s or "few" in s:
+        return 2.5
+    try:
+        return float(s)
+    except ValueError:
+        return 2.0
 
-    if "coconut" in s:
-        if b < 250000:
-            return "Coconut Chips"
-        elif b < 500000:
-            return "Coconut Flour"
-        elif b < 1000000:
-            return "Virgin Coconut Oil"
-        else:
-            return "Desiccated Coconut"
-    elif "palmyr" in s:
-        if b < 250000:
-            return "Palm Jaggery"
-        elif b < 400000:
-            return "Palm Sugar"
-        else:
-            return "Palm Treacle"
-    elif "kithul" in s:
-        if b < 200000:
-            return "Kithul Treacle"
-        elif b < 350000:
-            return "Kithul Jaggery"
-        else:
-            return "Kithul Flour"
-    return "Value-Added Production"
+
+def recommend_products(features: Dict[str, Any], top_k: int = 3) -> Dict[str, Any]:
+    """
+    Canonical ML product recommendation function.
+    Returns Top-K products with confidence scores and deterministic feasibility breakdown.
+    """
+    model = load_model()
+    if model is None:
+        raise RuntimeError("ML recommendation model is not loaded.")
+
+    sector = normalize_sector(features.get("sector"))
+    budget = float(features.get("budget_lkr") or features.get("budget") or 250000)
+    monthly_yield = float(features.get("monthly_yield_kg") or features.get("monthly_yield") or 1000)
+    employees = int(features.get("employees") or 2)
+    experience = normalize_experience(features.get("experience_years") or features.get("experience"))
+
+    input_df = pd.DataFrame([
+        {
+            "sector": sector,
+            "budget_lkr": budget,
+            "monthly_yield_kg": monthly_yield,
+            "employees": employees,
+            "experience_years": experience,
+        }
+    ])
+
+    probabilities = model.predict_proba(input_df)[0]
+    classes = model.classes_
+
+    # Filter by selected sector if applicable (only recommend products of the sector)
+    sector_prefix_map = {
+        "coconut": ["Coconut", "Virgin Coconut", "Desiccated"],
+        "kithul": ["Kithul"],
+        "palmyrah": ["Palmyrah", "Palm"],
+    }
+    allowed_prefixes = sector_prefix_map.get(sector, [])
+
+    ranked_indices = probabilities.argsort()[::-1]
+    recommendations: List[Dict[str, Any]] = []
+
+    for idx in ranked_indices:
+        prod_name = str(classes[idx])
+        prob = float(probabilities[idx])
+        # Filter to matched sector products
+        if allowed_prefixes and not any(prod_name.startswith(p) for p in allowed_prefixes):
+            continue
+        rank = len(recommendations) + 1
+        recommendations.append({
+            "rank": rank,
+            "product": prod_name,
+            "confidence": round(prob * 100.0, 1),
+        })
+        if len(recommendations) >= top_k:
+            break
+
+    # If all sector-filtered probabilities were 0 or none matched, fallback to top classes without filter
+    if not recommendations:
+        for i, idx in enumerate(ranked_indices[:top_k]):
+            recommendations.append({
+                "rank": i + 1,
+                "product": str(classes[idx]),
+                "confidence": round(float(probabilities[idx]) * 100.0, 1),
+            })
+
+    top_product = recommendations[0]["product"] if recommendations else "Value-Added Production"
+    feasibility = calculate_feasibility(
+        {
+            "budget_lkr": budget,
+            "monthly_yield_kg": monthly_yield,
+            "employees": employees,
+        },
+        top_product,
+    )
+
+    return {
+        "modelVersion": MODEL_VERSION,
+        "recommendations": recommendations,
+        "feasibility": feasibility,
+    }
 
 
 def recommend_business(
@@ -75,30 +148,15 @@ def recommend_business(
     employees: int,
     experience: str,
 ) -> str:
-    _load_artifacts()
-    normalized_sector = _normalize_string(sector)
-    normalized_experience = _normalize_string(experience)
-
-    if _model is not None and _sector_encoder is not None:
-        try:
-            import pandas as pd
-            if (
-                normalized_sector in _sector_encoder.classes_
-                and normalized_experience in _experience_encoder.classes_
-            ):
-                data = pd.DataFrame([
-                    {
-                        "sector": _sector_encoder.transform([normalized_sector])[0],
-                        "budget": int(budget),
-                        "monthly_yield": int(monthly_yield),
-                        "employees": int(employees),
-                        "experience": _experience_encoder.transform([normalized_experience])[0],
-                    }
-                ])
-                prediction = _model.predict(data)
-                return _target_encoder.inverse_transform(prediction)[0]
-        except Exception:
-            pass
-
-    return _rule_based_recommendation(normalized_sector, budget, monthly_yield, employees, normalized_experience)
-
+    """
+    Backward-compatible helper returning the top recommended product name.
+    """
+    res = recommend_products({
+        "sector": sector,
+        "budget_lkr": budget,
+        "monthly_yield_kg": monthly_yield,
+        "employees": employees,
+        "experience_years": experience,
+    }, top_k=1)
+    recs = res.get("recommendations", [])
+    return recs[0]["product"] if recs else "Value-Added Production"

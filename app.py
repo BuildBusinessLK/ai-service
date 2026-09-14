@@ -1,29 +1,64 @@
+from contextlib import asynccontextmanager
 import json
+import logging
 import os
+from pathlib import Path
 import re
 from types import SimpleNamespace
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 os.environ.setdefault("FASTEMBED_CACHE_PATH", "/tmp")
 os.environ.setdefault("HF_HOME", "/tmp")
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-import traceback
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from llm_factory import get_llm
 from pydantic import BaseModel, Field
 
+from llm_factory import get_llm
+from ml.predict import MODEL_VERSION, load_model, recommend_business, recommend_products
 from rag.query import get_qa_chain
 
 load_dotenv()
 
-load_dotenv()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("ai-service")
 
-app = FastAPI(title="BuildBusinessLK AI Service", version="3.0")
-service_state = SimpleNamespace(qa_chain=None, initialization_error=None)
+
+# ──────────────────────────────────────────────
+# Lifespan Management
+# ──────────────────────────────────────────────
+
+qa_chain = None
+
+
+def _get_chain():
+    global qa_chain
+    if qa_chain is None:
+        qa_chain = get_qa_chain()
+    return qa_chain
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Initializing BuildBusinessLK AI Service...")
+    load_model()
+    try:
+        _get_chain()
+    except Exception as e:
+        logger.warning(f"RAG initialization warning: {e}")
+    yield
+    logger.info("Shutting down BuildBusinessLK AI Service.")
+
+
+app = FastAPI(
+    title="BuildBusinessLK AI Service",
+    version="3.0",
+    lifespan=lifespan,
+)
 
 # Allow Spring Boot backend to call this service
 app.add_middleware(
@@ -33,21 +68,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from fastapi.responses import JSONResponse
-
-qa_chain = None
-
-def _get_chain():
-    global qa_chain
-    if qa_chain is None:
-        qa_chain = get_qa_chain()
-    return qa_chain
-
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
-
 
 # ──────────────────────────────────────────────
-# Request / Response schemas
+# Request / Response Schemas
 # ──────────────────────────────────────────────
 
 class ChatMessage(BaseModel):
@@ -60,6 +83,61 @@ class ChatBody(BaseModel):
     chat_history: List[ChatMessage] = Field(default_factory=list)
     userProfile: Optional[dict] = None
     businessProfile: Optional[dict] = None
+
+
+class BusinessProfile(BaseModel):
+    sector: Optional[str] = None
+    budget_lkr: Optional[float] = Field(default=250000, gt=0)
+    monthly_yield_kg: Optional[float] = Field(default=None, ge=0)
+    employees: Optional[int] = Field(default=None, ge=1)
+    experience_years: Optional[float] = Field(default=None, ge=0)
+
+
+class RecommendationDto(BaseModel):
+    rank: int
+    product: str
+    confidence: float
+
+
+class FeasibilityDto(BaseModel):
+    capitalFit: int
+    yieldFit: int
+    staffingFit: int
+
+
+class BusinessRecommendationResponse(BaseModel):
+    modelVersion: str = MODEL_VERSION
+    recommendedBusiness: Optional[str] = None
+    recommendations: List[RecommendationDto] = Field(default_factory=list)
+    feasibility: Optional[FeasibilityDto] = None
+    guidance: Optional[str] = None
+    actions: List[str] = Field(default_factory=list)
+    message: Optional[str] = None
+    sessionId: Optional[int] = None
+
+
+class BusinessAdvisorBody(BaseModel):
+    sessionId: Optional[int] = None
+    userProfile: Optional[dict] = None
+    businessProfile: Optional[dict] = None
+
+
+class RecommendationBody(BaseModel):
+    sector: Optional[str] = "coconut"
+    budget: Optional[float] = 250000
+    monthly_yield: Optional[float] = 1000
+    employees: Optional[int] = 2
+    experience: Optional[Any] = 1.0
+
+
+class RecommendationRequest(BaseModel):
+    business: Optional[BusinessProfile] = None
+    sector: Optional[str] = None
+    budget: Optional[float] = None
+    monthly_yield: Optional[float] = None
+    employees: Optional[int] = None
+    experience: Optional[Any] = None
+    top_k: int = Field(default=3, ge=1, le=5)
 
 
 class WebsiteCopyBody(BaseModel):
@@ -77,7 +155,7 @@ class AdGenerationBody(BaseModel):
 
 
 # ──────────────────────────────────────────────
-# Helpers
+# NLP Helpers & Intent Routing
 # ──────────────────────────────────────────────
 
 def _message_to_dict(msg: ChatMessage) -> dict:
@@ -97,100 +175,133 @@ def _format_profiles(user_profile: Optional[dict], business_profile: Optional[di
     return "\n\n".join(parts)
 
 
-def _extract_number(text: str, pattern: str) -> Optional[int]:
-    match = re.search(pattern, text)
-    if not match:
-        return None
-    value = match.group(1).replace(",", "")
-    if value.isdigit():
-        return int(value)
+def _extract_amount(text: str) -> Optional[int]:
+    """Extracts money amounts handling 'k', 'lakhs', commas, etc."""
+    lowered = text.lower()
+    # e.g., 400k, 500 k
+    k_match = re.search(r"(\d+(?:\.\d+)?)\s*k\b", lowered)
+    if k_match:
+        return int(float(k_match.group(1)) * 1000)
+
+    # e.g., 4 lakh, 5 lakhs, 2.5 lakhs
+    lakh_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:lakhs?|lacs?)\b", lowered)
+    if lakh_match:
+        return int(float(lakh_match.group(1)) * 100000)
+
+    # Word numbers for lakhs e.g. "four lakhs"
+    word_lakhs = {"one": 100000, "two": 200000, "three": 300000, "four": 400000, "five": 500000, "ten": 1000000}
+    for word, amt in word_lakhs.items():
+        if f"{word} lakh" in lowered:
+            return amt
+
+    # Explicit numbers near currency cues
+    curr_match = re.search(r"(?:budget|investment|invest|capital|lkr|rs\.?|rupees)[^\d]{0,15}([0-9][0-9,]*)", lowered)
+    if curr_match:
+        val = curr_match.group(1).replace(",", "")
+        if val.isdigit() and int(val) > 1000:
+            return int(val)
+
+    # General large number if greater than 10,000
+    for num_str in re.findall(r"\b([0-9][0-9,]{3,})\b", text):
+        cleaned = num_str.replace(",", "")
+        if cleaned.isdigit() and int(cleaned) >= 20000:
+            return int(cleaned)
+
     return None
 
 
-def _parse_experience(text: str) -> Optional[str]:
-    if re.search(r"\b(beginner|new|no experience|fresh|first time)\b", text):
-        return "beginner"
-    if re.search(r"\b(advanced|experienced|expert|professional|many years|5\+|6\+|7\+|8\+|9\+)\b", text):
-        return "advanced"
-    if re.search(r"\b(intermediate|some experience|a few years|couple years|2 years|3 years|4 years)\b", text):
-        return "intermediate"
-    year_match = re.search(r"(\d+)\s*(?:years|yrs?)\b", text)
+def _parse_experience(text: str) -> float:
+    lowered = text.lower()
+    if re.search(r"\b(beginner|new|no experience|fresh|first time)\b", lowered):
+        return 0.5
+    if re.search(r"\b(advanced|expert|professional|many years|5\+|6\+|7\+|8\+)\b", lowered):
+        return 5.0
+    if re.search(r"\b(intermediate|some experience|a few years|couple years|2 years|3 years)\b", lowered):
+        return 2.5
+    year_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:years|yrs?)\b", lowered)
     if year_match:
-        years = int(year_match.group(1))
-        if years <= 1:
-            return "beginner"
-        if years <= 4:
-            return "intermediate"
-        return "advanced"
+        return float(year_match.group(1))
+    return 2.0
+
+
+def _parse_yield(text: str) -> Optional[int]:
+    lowered = text.lower()
+    match = re.search(r"(?:yield|production|output|sap|raw material|liters?|kgs?|kg)[^\d]{0,15}([0-9][0-9,]*)", lowered)
+    if match:
+        val = match.group(1).replace(",", "")
+        if val.isdigit():
+            return int(val)
     return None
 
 
-def _parse_business_profile(question: str) -> dict[str, Any]:
-    text = question.lower()
+def _detect_recommendation_intent(question: str) -> bool:
+    lowered = question.lower()
+    strong_cues = [
+        "what should i start",
+        "what can i start",
+        "which product",
+        "what product",
+        "what business",
+        "best business",
+        "recommend",
+        "match product",
+        "product fit",
+        "which is better",
+        "feasibility",
+        "what to produce",
+        "suggest a business",
+        "what to do with",
+        "which suits",
+        "profitable",
+    ]
+    if any(sc in lowered for sc in strong_cues):
+        return True
+
+    # Action word + Sector
+    has_action = any(re.search(rf"\b{cue}\b", lowered) for cue in ["start", "launch", "begin", "make", "produce", "setup", "set up", "invest", "build"])
+    has_sector = any(sec in lowered for sec in ["coconut", "kithul", "palmyra", "palmyrah"])
+    return bool(has_action and has_sector)
+
+
+def _extract_slots(question: str, bp: Optional[dict] = None) -> Dict[str, Any]:
+    lowered = question.lower()
+    bp = bp or {}
+
+    # Sector
     sector = None
-    for candidate in ["palmyrah", "kithul", "coconut"]:
-        if candidate in text:
-            sector = candidate
+    for candidate in ["coconut", "kithul", "palmyrah", "palmyra"]:
+        if candidate in lowered:
+            sector = "palmyrah" if "palmyr" in candidate else candidate
             break
+    if not sector and bp.get("sector"):
+        sector = str(bp["sector"]).lower()
 
-    budget = _extract_number(text, r"(?:budget|investment|invest|capital|lkr|rs|rupees)[^\d]{0,20}([0-9][0-9,]*)")
-    monthly_yield = _extract_number(text, r"(?:yield|production|output|sap|liters|kgs|kg)[^\d]{0,20}([0-9][0-9,]*)")
-    employees = _extract_number(text, r"(?:employee|staff|worker|team)[^\d]{0,20}([0-9][0-9,]*)")
-    experience = _parse_experience(text)
+    # Budget
+    budget = _extract_amount(question)
+    if budget is None and bp.get("budget"):
+        budget = int(bp["budget"])
 
-    # Fallback if yield is described using only a number and budget is present
-    if monthly_yield is None:
-        numbers = re.findall(r"([0-9][0-9,]*)", text)
-        if sector and budget is not None and len(numbers) >= 2:
-            budget_text = str(budget)
-            if numbers[0].replace(",", "") == budget_text:
-                monthly_yield = int(numbers[1].replace(",", ""))
+    # Yield
+    yield_val = _parse_yield(question)
+    if yield_val is None and bp.get("monthly_yield"):
+        yield_val = int(bp["monthly_yield"])
 
-    if employees is None:
-        employees = 1
+    # Employees
+    emp_match = re.search(r"(\d+)\s*(?:employee|staff|worker|people|team)\b", lowered)
+    employees = int(emp_match.group(1)) if emp_match else (int(bp.get("employees")) if bp.get("employees") else 2)
 
-    profile: dict[str, Any] = {}
-    if sector:
-        profile["sector"] = sector
-    if budget is not None:
-        profile["budget"] = budget
-    if monthly_yield is not None:
-        profile["monthly_yield"] = monthly_yield
-    if employees is not None:
-        profile["employees"] = employees
-    if experience:
-        profile["experience"] = experience
-    else:
-        profile["experience"] = "intermediate"
-        profile["experience_assumed"] = "intermediate"
+    # Experience
+    experience = _parse_experience(question)
+    if bp.get("experience") and experience == 2.0:
+        experience = _parse_experience(str(bp["experience"]))
 
-    return profile
-
-
-def _build_ml_context(business_profile: dict[str, Any]) -> str:
-    if not business_profile:
-        return ""
-    values = []
-    for key in ["sector", "budget", "monthly_yield", "employees", "experience", "recommendedBusiness"]:
-        if key in business_profile:
-            values.append(f"{key}: {business_profile[key]}")
-    if "experience_assumed" in business_profile:
-        values.append("experience_assumed: assumed intermediate because it was not provided")
-    summary = "Business profile summary: " + "; ".join(values) if values else ""
-    if "recommendedBusiness" in business_profile:
-        summary += (
-            "\nUse the ML recommendation above as a guiding suggestion when answering the user. "
-            "If the user is asking for the best product or business option, mention the recommended business first."
-        )
-    return summary
-
-
-def _parse_json_object(text: str) -> dict[str, Any]:
-    s = text.strip()
-    if s.startswith("```"):
-        s = re.sub(r"^```[a-zA-Z]*\n", "", s)
-        s = re.sub(r"\n```\s*$", "", s)
-    return json.loads(s)
+    return {
+        "sector": sector,
+        "budget_lkr": budget,
+        "monthly_yield_kg": yield_val,
+        "employees": employees,
+        "experience_years": experience,
+    }
 
 
 def _build_business_advisor_prompt(recommended_business: str, sector: str) -> str:
@@ -202,87 +313,6 @@ def _build_business_advisor_prompt(recommended_business: str, sector: str) -> st
     )
 
 
-def _build_local_ad_fallback(body: AdGenerationBody) -> str:
-    business_name = (body.businessProfile or {}).get("businessName") or "your business"
-    sector = (body.businessProfile or {}).get("sector") or "your industry"
-    user_name = (body.userProfile or {}).get("fullName") or "our team"
-    
-    idea_str = body.idea or ""
-    if "Current ad copy:" in idea_str and "Edit request:" in idea_str:
-        try:
-            parts = idea_str.split("Current ad copy:")
-            after_ad = parts[1].split("Edit request:")
-            current_ad = after_ad[0].strip()
-            edit_request = after_ad[1].strip()
-            
-            # Match change X to Y or replace X with Y
-            match = re.search(r'(?:change|replace)\s+(.+?)\s+(?:to|with)\s+(.+)', edit_request, re.IGNORECASE)
-            if match:
-                old_val = match.group(1).strip()
-                new_val = match.group(2).strip()
-                # Run case-insensitive replace on the current ad text
-                pattern = re.compile(re.escape(old_val), re.IGNORECASE)
-                updated_ad = pattern.sub(new_val, current_ad)
-                return updated_ad
-            return current_ad
-        except Exception:
-            pass
-
-    request = idea_str.strip() or "our latest offer"
-
-    return f"""Facebook Ad
---------------------
-{business_name} is excited to introduce {request} for customers who value quality and trust.
-Discover more today and experience the difference.
-
-Instagram Ad
---------------------
-{business_name} brings {request} to life with care, quality, and a personal touch.
-Follow us and stay connected for the latest updates.
-
-WhatsApp Advertisement
---------------------
-Hello! We are {business_name}, and we are proud to share {request} with you.
-Reach out today to learn more about our offer.
-
-Short Headline
---------------------
-Fresh solutions from {business_name}
-
-Call to Action
---------------------
-Contact us today or visit our website to learn more.
-
-Hashtags
---------------------
-#{business_name.replace(' ', '')} #BusinessGrowth #SME #DigitalMarketing #{sector.replace(' ', '')}
-
-Suggested Tone
---------------------
-Friendly and professional for {user_name}.
-"""
-
-
-_PROMPT_ECHO_MARKERS = (
-    "you are an expert",
-    "business information",
-    "==============================",
-    "instructions",
-)
-
-
-def _looks_like_echoed_prompt(text: str) -> bool:
-    """Heuristic guard: if the model's output contains the scaffolding of our
-    own prompt (headers, meta-instructions) instead of actual ad copy, treat
-    it as a bad generation so we fall back to a clean template instead of
-    showing the user a garbled response."""
-    if not text:
-        return True
-    lowered = text.lower()
-    hits = sum(1 for marker in _PROMPT_ECHO_MARKERS if marker in lowered)
-    return hits >= 2
-
-
 # ──────────────────────────────────────────────
 # Endpoints
 # ──────────────────────────────────────────────
@@ -291,64 +321,233 @@ def _looks_like_echoed_prompt(text: str) -> bool:
 def health():
     provider = os.getenv("LLM_PROVIDER", "groq" if os.getenv("GROQ_API_KEY") else "ollama")
     model = os.getenv("GROQ_MODEL" if provider == "groq" else "OLLAMA_MODEL", "groq/compound-mini" if provider == "groq" else "llama3")
+    ml_loaded = load_model() is not None
     return {
         "status": "ok",
         "service": "BuildBusinessLK AI Service",
         "provider": provider,
         "model": model,
+        "mlModelLoaded": ml_loaded,
+        "modelVersion": MODEL_VERSION,
         "vectorstore": os.path.exists(os.getenv("VECTORSTORE_PATH", "rag/vectorstore")),
+    }
+
+
+@app.get("/model-info")
+def model_info():
+    metrics_file = Path(__file__).resolve().parent / "ml" / "models" / "metrics_v1.json"
+    if metrics_file.exists():
+        with open(metrics_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {
+        "model_version": MODEL_VERSION,
+        "status": "active",
+        "features": ["sector", "budget_lkr", "monthly_yield_kg", "employees", "experience_years"],
     }
 
 
 @app.post("/chat")
 def chat(body: ChatBody):
     """
-    Primary chat endpoint called by the Spring Boot backend.
-    Accepts the user question + chat history + user/business profile context.
-    Returns the AI answer as {"message": "..."}
+    Primary chat endpoint.
+    Performs Intent Classification and Slot Extraction:
+    - If user asks for a business recommendation or product match, executes the ML model
+      and returns structured recommendations, feasibility metrics, and RAG explanation.
+    - Otherwise, routes to standard RAG domain consultation.
     """
     try:
         chain = _get_chain()
+        is_rec_intent = _detect_recommendation_intent(body.question)
+        slots = _extract_slots(body.question, body.businessProfile)
 
-        parsed_ml = _parse_business_profile(body.question)
-        ml_profile = dict(body.businessProfile or {})
-        ml_profile.update(parsed_ml)
-        if ml_profile.get("sector") and ml_profile.get("budget") and ml_profile.get("monthly_yield"):
+        # If user explicitly asks for recommendation OR has given both sector and budget
+        if is_rec_intent or (slots.get("sector") and slots.get("budget_lkr")):
+            sector = slots.get("sector")
+            budget = slots.get("budget_lkr")
+
+            # Missing slot handling
+            if not sector:
+                return {
+                    "type": "QUESTION",
+                    "message": "Which agricultural value chain are you exploring? We currently specialize in **Coconut**, **Kithul**, and **Palmyrah**.",
+                }
+
+            if not budget:
+                return {
+                    "type": "QUESTION",
+                    "message": f"To find the best {sector.capitalize()} product match, what is your approximate initial investment budget in LKR?",
+                }
+
+            # If yield is not specified, assign a realistic baseline for the sector
+            yield_val = slots.get("monthly_yield_kg")
+            assumed_yield = False
+            if not yield_val:
+                yield_val = 1500 if sector == "coconut" else 500
+                slots["monthly_yield_kg"] = yield_val
+                assumed_yield = True
+
+            # Run ML model
             try:
-                from ml.predict import recommend_business
-                rec = recommend_business(
-                    sector=str(ml_profile["sector"]),
-                    budget=int(ml_profile["budget"]),
-                    monthly_yield=int(ml_profile["monthly_yield"]),
-                    employees=int(ml_profile.get("employees", 1)),
-                    experience=str(ml_profile.get("experience", "intermediate")),
+                rec_result = recommend_products(slots, top_k=3)
+                top_product = rec_result["recommendations"][0]["product"]
+                top_conf = rec_result["recommendations"][0]["confidence"]
+
+                # Generate domain explanation via RAG
+                user_context = _format_profiles(body.userProfile, body.businessProfile)
+                rec_prompt = (
+                    f"The user has LKR {budget:,} capital in the {sector} sector "
+                    f"with ~{yield_val} kg/L monthly raw material access and {slots['employees']} workers. "
+                    f"The ML recommendation model matched them with '{top_product}' ({top_conf}% Match). "
+                    f"Briefly explain why this product fits their capital and resource scale, and what first step they should take in Sri Lanka."
                 )
-                ml_profile["recommendedBusiness"] = rec
-            except Exception:
-                pass
+                try:
+                    rag_result = chain.invoke({
+                        "input": rec_prompt,
+                        "chat_history": [_message_to_dict(m) for m in body.chat_history[-4:]],
+                        "user_context": user_context,
+                    })
+                    explanation = rag_result["answer"]
+                except Exception as rag_err:
+                    logger.warning(f"RAG guidance failed, using localized guidance: {rag_err}")
+                    explanation = f"{top_product} offers strong local and export value addition for your LKR {budget:,} capital in the {sector} value chain. Prioritize basic processing equipment, hygienic bottling/packaging, and target local retail or regional collection centers."
 
-        ml_context = _build_ml_context(ml_profile)
+                assumed_note = f" *(calculated assuming ~{yield_val:,} kg monthly raw material availability and {slots['employees']} workers)*" if assumed_yield else ""
+                message_text = f"Based on your budget of **LKR {budget:,}** in the **{sector.capitalize()}** sector{assumed_note}, **{top_product}** is your strongest match."
+
+                return {
+                    "type": "RECOMMENDATION",
+                    "message": message_text,
+                    "recommendation": {
+                        "modelVersion": rec_result["modelVersion"],
+                        "recommendedBusiness": top_product,
+                        "recommendations": rec_result["recommendations"],
+                        "feasibility": rec_result["feasibility"],
+                        "guidance": explanation,
+                        "actions": [
+                            f"Show required machinery for {top_product}",
+                            f"Draft a business plan for {top_product}",
+                            f"Calculate profit margins for {top_product}",
+                            f"Export requirements for {top_product}",
+                        ],
+                    },
+                }
+            except Exception as ml_err:
+                logger.warning(f"ML recommendation fallback to RAG: {ml_err}")
+
+        # Standard RAG Chat
         user_context = _format_profiles(body.userProfile, body.businessProfile)
-        if ml_context:
-            user_context += "\n\n" + ml_context
+        try:
+            result = chain.invoke({
+                "input": body.question,
+                "chat_history": [_message_to_dict(m) for m in body.chat_history],
+                "user_context": user_context,
+            })
+            return {
+                "type": "TEXT",
+                "message": result["answer"],
+            }
+        except Exception as llm_err:
+            logger.warning(f"LLM call failed: {llm_err}")
+            return {
+                "type": "TEXT",
+                "message": "I am having temporary trouble reaching the external AI service. You can use the '✨ Match Products' button above for direct ML product recommendations without waiting for the LLM.",
+            }
+    except Exception as e:
+        logger.error(f"Chat error: {e}", exc_info=True)
+        return JSONResponse(status_code=500, content={"message": f"AI service error: {str(e)}"})
 
+
+@app.post("/recommend-business")
+def recommend_endpoint(body: RecommendationRequest):
+    """
+    Direct ML endpoint returning Top-3 products and feasibility metrics.
+    """
+    try:
+        profile_data = {}
+        if body.business:
+            profile_data = body.business.model_dump()
+        else:
+            profile_data = {
+                "sector": body.sector,
+                "budget_lkr": body.budget,
+                "monthly_yield_kg": body.monthly_yield,
+                "employees": body.employees,
+                "experience_years": body.experience,
+            }
+        result = recommend_products(profile_data, top_k=body.top_k)
+        return {
+            "success": True,
+            "data": result,
+        }
+    except Exception as e:
+        logger.error(f"Recommendation endpoint error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/business-advisor")
+def business_advisor(body: BusinessAdvisorBody):
+    """
+    Called by Spring Boot Gateway for the Business Recommendation Dialog.
+    Runs ML Top-3 recommendation + Feasibility + RAG domain guidance.
+    """
+    bp = body.businessProfile or {}
+    sector = bp.get("sector") or "coconut"
+    budget = bp.get("budget_lkr") or bp.get("budget") or 250000
+    monthly_yield = bp.get("monthly_yield_kg") or bp.get("monthly_yield") or 1000
+    employees = bp.get("employees") or 2
+    experience = bp.get("experience_years") or bp.get("experience") or 1.0
+
+    features = {
+        "sector": sector,
+        "budget_lkr": budget,
+        "monthly_yield_kg": monthly_yield,
+        "employees": employees,
+        "experience_years": experience,
+    }
+
+    try:
+        rec_res = recommend_products(features, top_k=3)
+    except Exception as e:
+        logger.error(f"ML Recommendation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"ML service unavailable: {e}")
+
+    top_product = rec_res["recommendations"][0]["product"]
+    user_context = _format_profiles(body.userProfile, bp)
+    prompt = _build_business_advisor_prompt(top_product, str(sector))
+
+    chain = _get_chain()
+    guidance = ""
+    try:
         result = chain.invoke({
-            "input": body.question,
-            "chat_history": [_message_to_dict(m) for m in body.chat_history],
+            "input": prompt,
+            "chat_history": [],
             "user_context": user_context,
         })
-        return {"message": result["answer"]}
+        guidance = result.get("answer", "")
     except Exception as e:
-        import logging, traceback
-        logging.error(f"Chat error: {e}\n{traceback.format_exc()}")
-        return JSONResponse(status_code=500, content={"message": f"AI service error: {str(e)}"})
+        logger.warning(f"RAG guidance error in business-advisor: {e}")
+        guidance = f"Focus on setting up hygienic production standards for {top_product}. Target local retail and export quality compliance."
+
+    return {
+        "modelVersion": rec_res["modelVersion"],
+        "recommendedBusiness": top_product,
+        "recommendations": rec_res["recommendations"],
+        "feasibility": rec_res["feasibility"],
+        "guidance": guidance,
+        "actions": [
+            f"Show required machinery for {top_product}",
+            f"Draft a business plan for {top_product}",
+            f"Calculate profit margins for {top_product}",
+            f"Export requirements for {top_product}",
+        ],
+        "sessionId": body.sessionId,
+    }
 
 
 @app.post("/website-copy")
 def website_copy(body: WebsiteCopyBody):
     """
-    Generates short marketing copy (hero, about, marketing text) for an SME website
-    based on the stored business profile.
+    Generates short marketing copy for an SME website.
     """
     bp = body.businessProfile or {}
     raw = json.dumps(bp, ensure_ascii=False, indent=2)
@@ -379,7 +578,7 @@ def website_copy(body: WebsiteCopyBody):
     out = chain.invoke({"business": raw})
 
     try:
-        data = _parse_json_object(out)
+        data = json.loads(re.sub(r"^```[a-zA-Z]*\n", "", out.strip()).rstrip("```").strip())
     except Exception:
         name = (bp.get("businessName") or "Our business").strip()
         data = {
@@ -395,196 +594,31 @@ def website_copy(body: WebsiteCopyBody):
     }
 
 
-@app.post("/business-advisor")
-def business_advisor(body: BusinessAdvisorBody):
-    missing_fields = []
-    business_profile = body.businessProfile or {}
-
-    for field_name in ["sector", "budget", "monthly_yield", "employees", "experience"]:
-        value = business_profile.get(field_name)
-        if value is None or (isinstance(value, str) and not value.strip()):
-            missing_fields.append(field_name)
-
-    if missing_fields:
-        return {
-            "message": (
-                "Please complete your business profile with the following fields: "
-                f"{', '.join(missing_fields)}."
-            )
-        }
-
-    try:
-        recommendation = recommend_business(
-            sector=business_profile["sector"],
-            budget=int(business_profile["budget"]),
-            monthly_yield=int(business_profile["monthly_yield"]),
-            employees=int(business_profile["employees"]),
-            experience=business_profile["experience"],
-        )
-    except ValueError as exc:
-        return {"message": str(exc)}
-    except Exception:
-        return {
-            "message": (
-                "Unable to generate a recommendation with the provided profile. "
-                "Please check the values and try again."
-            )
-        }
-
-    user_context = _format_profiles(body.userProfile, business_profile)
-    prompt = _build_business_advisor_prompt(recommendation, str(business_profile.get("sector", "")))
-    result = qa_chain.invoke({
-        "input": prompt,
-        "chat_history": [],
-        "user_context": user_context,
-    })
-
-    return {
-        "recommendedBusiness": recommendation,
-        "guidance": result["answer"],
-    }
-
-
-@app.post("/recommend-business")
-def recommend(body: RecommendationBody):
-
-    recommendation = recommend_business(
-        sector=body.sector,
-        budget=body.budget,
-        monthly_yield=body.monthly_yield,
-        employees=body.employees,
-        experience=body.experience
-    )
-
-    return {
-        "recommendation": recommendation
-    }
-
-
 @app.post("/ad-generate")
 def generate_ad(body: AdGenerationBody):
+    """
+    Generates multi-platform SME marketing copy.
+    """
     try:
-
-        business = json.dumps(
-            body.businessProfile or {},
-            ensure_ascii=False,
-            indent=2
-        )
-
-        user = json.dumps(
-            body.userProfile or {},
-            ensure_ascii=False,
-            indent=2
-        )
+        business = json.dumps(body.businessProfile or {}, ensure_ascii=False, indent=2)
+        user = json.dumps(body.userProfile or {}, ensure_ascii=False, indent=2)
 
         prompt = ChatPromptTemplate.from_messages([
             (
                 "system",
-                """
-You are an expert Sri Lankan SME marketing assistant and advertising copywriter.
-
-You will be given a business profile, a user profile, and a campaign brief
-describing what the advertisement should be about. Write real, ready-to-post
-advertisement copy that personalizes the message using the business and user
-details provided.
-
-Rules:
-- Output ONLY the advertisement content in the format below. Never repeat,
-  quote, or summarize these instructions or the brief itself in your answer.
-- Do not include section separators like "====" or restate field labels
-  such as "Business Information" or "Instructions".
-- Keep each section short and platform-appropriate.
-
-Return exactly these sections, in this order:
-
-Facebook Ad
---------------------
-<ad text>
-
-Instagram Ad
---------------------
-<ad text>
-
-WhatsApp Advertisement
---------------------
-<ad text>
-
-Short Headline
---------------------
-<one headline>
-
-Call to Action
---------------------
-<one call to action>
-
-Hashtags
---------------------
-<3-5 hashtags>
-"""
+                """You are an expert Sri Lankan SME marketing assistant and advertising copywriter.
+Write ready-to-post advertisement copy for Facebook, Instagram, and WhatsApp tailored to the Sri Lankan market.""",
             ),
             (
                 "human",
-                """
-Business profile (JSON):
-{business}
-
-User profile (JSON):
-{user}
-
-Campaign brief:
-{prompt}
-"""
-            )
+                """Business profile (JSON):\n{business}\n\nUser profile (JSON):\n{user}\n\nCampaign brief:\n{prompt}""",
+            ),
         ])
 
-        try:
-            llm = get_llm(temperature=0.5)
-        except Exception as e:
-            traceback.print_exc()
-            return {
-                "generatedAds": _build_local_ad_fallback(body)
-            }
-
+        llm = get_llm(temperature=0.5)
         chain = prompt | llm | StrOutputParser()
-
-        print("========================")
-        print(body.model_dump())
-        print("========================")
-
-        try:
-            if not body.prompt:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Prompt cannot be empty."
-                )
-            result = chain.invoke({
-                "business": business,
-                "user": user,
-                "prompt": body.prompt
-            })
-            result_text = str(result).strip() if result else ""
-            if not result_text or _looks_like_echoed_prompt(result_text):
-                # The model failed to follow instructions and echoed the
-                # prompt/brief back instead of writing ad copy — use the
-                # clean template fallback rather than show garbage.
-                return {
-                    "generatedAds": _build_local_ad_fallback(body)
-                }
-        except Exception:
-            traceback.print_exc()
-            return {
-                "generatedAds": _build_local_ad_fallback(body)
-            }
-
-        return {
-            "generatedAds": result
-        }
-
+        result = chain.invoke({"business": business, "user": user, "prompt": body.prompt})
+        return {"generatedAds": result}
     except Exception as e:
-        traceback.print_exc()
-
-        return {
-            "success": False,
-            "error": str(e),
-            "type": type(e).__name__
-        }
+        logger.error(f"Ad generation error: {e}", exc_info=True)
+        return {"success": False, "error": str(e)}

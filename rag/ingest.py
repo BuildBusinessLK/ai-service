@@ -7,11 +7,20 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
 try:
-    # Prefer community loaders where available
+    from langchain_community.embeddings import FastEmbedEmbeddings
+    USE_FASTEMBED = True
+except ImportError:
+    from langchain_huggingface import HuggingFaceEmbeddings
+    USE_FASTEMBED = False
+
+try:
     from langchain_community.document_loaders import TextLoader, CSVLoader
 except Exception:
-    from langchain_community.document_loaders import TextLoader
-    CSVLoader = None
+    try:
+        from langchain.document_loaders import TextLoader, CSVLoader
+    except Exception:
+        from langchain_community.document_loaders import TextLoader
+        CSVLoader = None
 
 try:
     # PDF loaders (try a few options)
@@ -147,9 +156,12 @@ def split_documents(documents):
 
 
 def create_vectorstore(chunks):
-    embeddings = HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL
-    )
+    if USE_FASTEMBED:
+        embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5", cache_dir="/tmp")
+    else:
+        embeddings = HuggingFaceEmbeddings(
+            model_name=EMBEDDING_MODEL
+        )
     vectorstore = FAISS.from_documents(chunks, embeddings)
     vectorstore.save_local(DB_PATH)
 
