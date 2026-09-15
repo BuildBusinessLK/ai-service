@@ -36,13 +36,14 @@ load_model()
 
 def normalize_sector(sector: Any) -> str:
     s = str(sector or "").strip().lower()
-    if "palmyr" in s:
+    if "palmyr" in s or "thal" in s:
         return "palmyrah"
     if "kithul" in s or "kitul" in s:
         return "kithul"
     if "coconut" in s or "coco" in s or "pol" in s:
         return "coconut"
-    return s or "coconut"
+    return "coconut"
+
 
 
 def normalize_experience(exp: Any) -> float:

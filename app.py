@@ -439,14 +439,23 @@ def _extract_slots(question: str, bp: Optional[dict] = None) -> Dict[str, Any]:
     lowered = question.lower()
     bp = bp or {}
 
-    # Sector
+    # Sector - strictly restricted to Coconut, Kithul, Palmyrah (Thal)
     sector = None
-    for candidate in ["coconut", "kithul", "palmyrah", "palmyra"]:
-        if candidate in lowered:
-            sector = "palmyrah" if "palmyr" in candidate else candidate
-            break
+    if any(k in lowered for k in ["palmyrah", "palmyra", "thal"]):
+        sector = "palmyrah"
+    elif any(k in lowered for k in ["kithul", "kitul"]):
+        sector = "kithul"
+    elif any(k in lowered for k in ["coconut", "coco", "pol", "copra", "coir"]):
+        sector = "coconut"
+
     if not sector and bp.get("sector"):
-        sector = str(bp["sector"]).lower()
+        bp_s = str(bp["sector"]).lower()
+        if "palmyr" in bp_s or "thal" in bp_s:
+            sector = "palmyrah"
+        elif "kithul" in bp_s or "kitul" in bp_s:
+            sector = "kithul"
+        elif "coconut" in bp_s or "coco" in bp_s or "pol" in bp_s:
+            sector = "coconut"
 
     # Budget
     budget = _extract_amount(question)

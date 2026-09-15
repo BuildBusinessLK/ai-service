@@ -44,8 +44,10 @@ SUPPORTED_SECTORS = {
 }
 
 KNOWN_UNSUPPORTED_TERMS = (
-    "rubber", "tea", "coffee", "cinnamon", "pepper",
-    "rice", "paddy", "spice", "spices",
+    "rubber", "tea", "coffee", "cinnamon", "pepper", "clove", "cardamom",
+    "rice", "paddy", "spice", "spices", "garment", "garments", "textile",
+    "textiles", "gem", "gems", "handicraft", "handicrafts", "fishery", "fish",
+    "retail", "tourism", "apparel"
 )
 
 
@@ -68,11 +70,11 @@ def _get_unsupported_terms(question: str) -> list[str]:
 
 
 def _unsupported_message(terms: list[str] | None = None) -> str:
-    topic = ", ".join(terms) if terms else "that sector"
+    topic = ", ".join(terms) if terms else "that domain"
     return (
-        "I’m sorry, I only have good, verified data for coconut (pol), palmyrah/thal, "
-        "and kithul right now. I can’t answer in depth about "
-        f"{topic} yet, but I’m happy to help with coconut, palmyrah, or kithul questions."
+        "BuildBusinessLK exclusively supports Sri Lanka's **Coconut (Pol)**, **Kithul**, "
+        "and **Palmyrah (Thal)** indigenous value chains. We do not provide advisory or recommendations for "
+        f"**{topic}**. Please select or ask about opportunities in Coconut, Kithul, or Palmyrah (Thal)."
     )
 
 
