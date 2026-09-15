@@ -154,6 +154,30 @@ class AdGenerationBody(BaseModel):
     userProfile: Optional[dict] = None
 
 
+class EmailGenerationRequest(BaseModel):
+    goal: Optional[str] = "GENERAL_ANNOUNCEMENT"
+    productName: Optional[str] = None
+    sector: Optional[str] = None
+    targetAudience: Optional[str] = None
+    keyOffer: Optional[str] = None
+    tone: Optional[str] = "professional"
+    companyName: Optional[str] = None
+    userName: Optional[str] = None
+    contactPhone: Optional[str] = None
+    contactEmail: Optional[str] = None
+    userProfile: Optional[dict] = None
+    businessProfile: Optional[dict] = None
+    idea: Optional[str] = None
+
+
+class EmailGenerationResponse(BaseModel):
+    subject: str
+    body: str
+    suggestedCallToAction: Optional[str] = None
+    targetAudienceNotes: Optional[str] = None
+
+
+
 # ──────────────────────────────────────────────
 # NLP Helpers & Intent Routing
 # ──────────────────────────────────────────────
@@ -263,6 +287,154 @@ def _detect_recommendation_intent(question: str) -> bool:
     return bool(has_action and has_sector)
 
 
+def _detect_email_campaign_intent(question: str) -> bool:
+    lowered = question.lower()
+    email_cues = [
+        "draft email",
+        "write email",
+        "send email",
+        "email campaign",
+        "email exporters",
+        "email to exporters",
+        "email to coconut",
+        "email to kithul",
+        "email to palmyrah",
+        "email pitch",
+        "outreach email",
+        "email marketing",
+        "cold email",
+        "wholesale email",
+        "sample email",
+        "mail campaign",
+        "compose email",
+        "marketing email",
+    ]
+    return any(cue in lowered for cue in email_cues)
+
+
+def generate_email_core(req: EmailGenerationRequest) -> Dict[str, Any]:
+    bp = req.businessProfile or {}
+    up = req.userProfile or {}
+
+    company_name = req.companyName or bp.get("businessName") or "Lanka Value Agribusiness"
+    user_name = req.userName or (up.get("fullName") if up else "Founder & Managing Director")
+    sector = (req.sector or bp.get("sector") or "Coconut").capitalize()
+    product = req.productName or (f"Certified {sector} Value-Added Products")
+    audience = req.targetAudience or "EDB Registered Sri Lankan Exporters & Wholesale Buyers"
+    goal = req.goal or "GENERAL_ANNOUNCEMENT"
+    tone = req.tone or "Professional B2B"
+    key_offer = req.keyOffer or req.idea or f"Introduce {company_name}'s premium {sector} products, certified farmgate sourcing, and wholesale packaging availability."
+    phone = req.contactPhone or "+94 77 123 4567"
+    email = req.contactEmail or "inquiries@buildbusinesslk.com"
+
+    # Sector-specific origin and credential grounding
+    origin_map = {
+        "Coconut": "Sri Lanka Coconut Triangle (Kurunegala, Puttalam & Gampaha estates)",
+        "Kithul": "Central Highlands & Sabaragamuwa Rainforest Buffer Zones (Ratnapura/Kegalle)",
+        "Palmyrah": "Northern & Eastern Province (Jaffna Peninsula & Mannar)",
+    }
+    origin_region = origin_map.get(sector, "Authentic Sri Lankan Agro-Processing Estates")
+
+    prompt_text = f"""
+You are an expert commercial business email copywriter and export market consultant for Sri Lankan MSMEs.
+Write a concise, high-converting commercial business email tailored to the following scenario:
+
+Campaign Goal: {goal}
+Company Name: {company_name}
+Sender Name: {user_name}
+Sector: {sector}
+Product / Focus: {product}
+Target Audience: {audience}
+Tone: {tone}
+Key Offer / Brief: {key_offer}
+Sender Contact Phone: {phone}
+Sender Contact Email: {email}
+
+Strict Domain & Tone Guidelines:
+1. Subject line must be punchy, commercial, professional (no spam words, no ALL-CAPS, under 65 chars).
+2. GEOGRAPHIC ACCURACY (CRITICAL):
+   - Sector {sector}: Sourcing origin MUST strictly be {origin_region}.
+   - NEVER attribute Coconut products to Palmyrah estates or vice versa.
+3. CAMPAIGN GOAL CONSISTENCY:
+   - If Goal is WHOLESALE_PITCH or EXPORTER_SAMPLE_OFFER: Target B2B export houses and distributors. Focus on export container loads / MOQ, commercial grading (SLS / ISO / organic), packaging (bulk drums, HDPE, private label), and offering a sample dispatch pack. DO NOT refer to retail discounts.
+   - If Goal is RETAIL_DISCOUNT: Target retail buyers / consumers. Focus on consumer packaging, introductory discounts, and ordering directly.
+4. Structure the body into 3-4 cleanly spaced paragraphs with bullet points for key commercial specs (Purity, Origin: {origin_region}, Certification, Packaging, MOQ/Terms).
+5. Include a professional, non-pushy Call to Action.
+6. Professional signature block with sender name, title, company, phone, and email.
+
+Return ONLY a JSON object with this exact schema:
+{{
+  "subject": "...",
+  "body": "...",
+  "suggestedCallToAction": "...",
+  "targetAudienceNotes": "..."
+}}
+"""
+
+    llm = get_llm(temperature=0.3)
+    if llm is not None:
+        try:
+            chain = ChatPromptTemplate.from_messages([
+                ("system", "You are an expert Sri Lankan agribusiness export copywriter. Output strictly valid JSON without markdown fences. Ensure geographic origins strictly match Sri Lankan agricultural regions."),
+                ("human", "{prompt}"),
+            ]) | llm | StrOutputParser()
+            raw_out = chain.invoke({"prompt": prompt_text})
+            cleaned = re.sub(r"^```(?:json)?\s*", "", raw_out.strip())
+            cleaned = re.sub(r"\s*```$", "", cleaned).strip()
+            parsed = json.loads(cleaned)
+            if "subject" in parsed and "body" in parsed:
+                return {
+                    "subject": str(parsed["subject"]).strip(),
+                    "body": str(parsed["body"]).strip(),
+                    "suggestedCallToAction": str(parsed.get("suggestedCallToAction", "Request wholesale pricing & sample pack")).strip(),
+                    "targetAudienceNotes": str(parsed.get("targetAudienceNotes", f"Targeting {audience}")).strip(),
+                }
+        except Exception as e:
+            logger.warning(f"LLM email generation failed: {e}. Using deterministic fallback.")
+
+    # High quality deterministic fallback
+    subject_map = {
+        "WHOLESALE_PITCH": f"Wholesale Supply Inquiry: Export-Grade {product} from {company_name}",
+        "EXPORTER_SAMPLE_OFFER": f"Export-Grade {product} Samples Available – {company_name}",
+        "RETAIL_DISCOUNT": f"Special Commercial Discount on Fresh Batch of {product}",
+        "HARVEST_ANNOUNCEMENT": f"New Harvest Ready: Certified Sri Lankan {sector} Supply",
+    }
+    subj = subject_map.get(goal, f"Commercial Partnership Inquiry – {product} by {company_name}")
+
+    body_text = f"""Dear Commercial Partner,
+
+I hope this email finds you well.
+
+I am writing to you on behalf of {company_name}, a verified Sri Lankan producer operating in the {sector} value chain. We are currently offering our latest harvest batch of {product}, processed to meet stringent export and commercial grading criteria.
+
+Key Commercial Specifications:
+• Purity: 100% pure, single-origin {sector.lower()} agro-processing
+• Origin: {origin_region}
+• Certification: SLS (Sri Lanka Standards) & Food Safety compliant
+• Packaging: Commercial bulk containers and food-grade export packaging
+• Commercial Terms: {key_offer}
+
+We would welcome the opportunity to courier a complimentary evaluation sample pack and our wholesale specification sheet to your procurement team.
+
+Please reply to this email or contact me directly at {phone} to request sample shipments or container pricing.
+
+Warm regards,
+
+{user_name}
+{company_name}
+Phone: {phone}
+Email: {email}
+"""
+    return {
+        "subject": subj,
+        "body": body_text,
+        "suggestedCallToAction": "Request complimentary evaluation sample pack",
+        "targetAudienceNotes": f"Tailored for {audience} with verified {origin_region} origin.",
+    }
+
+
+
+
 def _extract_slots(question: str, bp: Optional[dict] = None) -> Dict[str, Any]:
     lowered = question.lower()
     bp = bp or {}
@@ -358,9 +530,52 @@ def chat(body: ChatBody):
     try:
         chain = _get_chain()
         is_rec_intent = _detect_recommendation_intent(body.question)
+        is_email_intent = _detect_email_campaign_intent(body.question)
         slots = _extract_slots(body.question, body.businessProfile)
 
-        # If user explicitly asks for recommendation OR has given both sector and budget
+        # 1. Email Campaign Intent Routing
+        if is_email_intent:
+            sector = slots.get("sector") or (body.businessProfile.get("sector") if body.businessProfile else "Coconut")
+            lowered_q = body.question.lower()
+            if "sample" in lowered_q:
+                goal = "EXPORTER_SAMPLE_OFFER"
+            elif "wholesale" in lowered_q or "pitch" in lowered_q or "bulk" in lowered_q:
+                goal = "WHOLESALE_PITCH"
+            elif "discount" in lowered_q or "sale" in lowered_q or "promo" in lowered_q:
+                goal = "RETAIL_DISCOUNT"
+            elif "harvest" in lowered_q or "fresh" in lowered_q or "season" in lowered_q:
+                goal = "HARVEST_ANNOUNCEMENT"
+            else:
+                goal = "GENERAL_ANNOUNCEMENT"
+
+            email_req = EmailGenerationRequest(
+                goal=goal,
+                sector=str(sector),
+                keyOffer=body.question,
+                targetAudience="EDB Registered Exporters & Wholesale Distributors",
+                businessProfile=body.businessProfile,
+                userProfile=body.userProfile,
+            )
+            email_res = generate_email_core(email_req)
+            return {
+                "type": "EMAIL_CAMPAIGN",
+                "message": f"I've drafted a targeted B2B outreach email for your **{str(sector).capitalize()}** campaign. You can preview, edit, or launch the campaign simulation in our Email Campaign Studio.",
+                "emailCampaign": {
+                    "goal": goal,
+                    "sector": str(sector).upper(),
+                    "subject": email_res["subject"],
+                    "body": email_res["body"],
+                    "targetAudience": email_res["targetAudienceNotes"],
+                    "suggestedCallToAction": email_res["suggestedCallToAction"],
+                },
+                "actions": [
+                    "Open in Email Campaign Studio",
+                    "Regenerate with formal export tone",
+                    "Target EDB Exporters Directory",
+                ],
+            }
+
+        # 2. Recommendation Intent Routing
         if is_rec_intent or (slots.get("sector") and slots.get("budget_lkr")):
             sector = slots.get("sector")
             budget = slots.get("budget_lkr")
@@ -622,3 +837,22 @@ Write ready-to-post advertisement copy for Facebook, Instagram, and WhatsApp tai
     except Exception as e:
         logger.error(f"Ad generation error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
+
+
+@app.post("/email-generate", response_model=EmailGenerationResponse)
+def generate_email_endpoint(body: EmailGenerationRequest):
+    """
+    Generates high-converting commercial business emails tailored to Sri Lankan MSMEs
+    in Coconut, Kithul, and Palmyrah sectors for B2B export outreach or retail promotions.
+    """
+    try:
+        res = generate_email_core(body)
+        return EmailGenerationResponse(
+            subject=res["subject"],
+            body=res["body"],
+            suggestedCallToAction=res.get("suggestedCallToAction"),
+            targetAudienceNotes=res.get("targetAudienceNotes"),
+        )
+    except Exception as e:
+        logger.error(f"Email generation endpoint error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
