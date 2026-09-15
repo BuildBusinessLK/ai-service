@@ -45,9 +45,8 @@ SUPPORTED_SECTORS = {
 
 KNOWN_UNSUPPORTED_TERMS = (
     "rubber", "tea", "coffee", "cinnamon", "pepper", "clove", "cardamom",
-    "rice", "paddy", "spice", "spices", "garment", "garments", "textile",
-    "textiles", "gem", "gems", "handicraft", "handicrafts", "fishery", "fish",
-    "retail", "tourism", "apparel"
+    "rice", "paddy", "garment", "garments", "textile",
+    "textiles", "gem", "gems", "fishery", "fish", "apparel"
 )
 
 
@@ -204,18 +203,21 @@ class SMEAdvisorChain:
         supported_sectors = _get_supported_sectors(question)
         unsupported_terms = _get_unsupported_terms(question)
 
-        # Hard guard only when user explicitly asks about known unsupported agricultural sectors
-        if unsupported_terms and not supported_sectors:
-            return {
-                "answer": _unsupported_message(unsupported_terms),
-                "context": [],
-            }
-
         history_sector = None
         if not supported_sectors and chat_history:
             history_sector = _extract_sector_from_context(chat_history)
 
         context_sector = _extract_sector_from_context(user_context)
+
+        # Hard guard only when user explicitly asks about known unsupported agricultural sectors
+        # without any supported context in question, chat history, or user profile
+        has_supported_context = bool(supported_sectors or history_sector or context_sector)
+        if unsupported_terms and not has_supported_context:
+            return {
+                "answer": _unsupported_message(unsupported_terms),
+                "context": [],
+            }
+
         effective_sector = supported_sectors[0] if supported_sectors else (history_sector or context_sector or "coconut")
 
         retrieval_query = question if supported_sectors else f"{effective_sector} {question}"
