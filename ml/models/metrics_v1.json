@@ -22,9 +22,9 @@
     "Palmyrah Treacle",
     "Virgin Coconut Oil"
   ],
-  "top1_accuracy": 0.7273,
+  "top1_accuracy": 0.75,
   "top3_accuracy": 1.0,
-  "macro_f1": 0.689,
-  "cv_mean_accuracy": 0.7818,
-  "cv_std_accuracy": 0.0636
+  "macro_f1": 0.7234,
+  "cv_mean_accuracy": 0.7864,
+  "cv_std_accuracy": 0.0396
 }
