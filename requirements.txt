@@ -17,5 +17,4 @@ python-docx
 python-pptx
 pypdf
 openai
-unstructured
 openpyxl

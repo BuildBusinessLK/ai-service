@@ -498,6 +498,16 @@ def _build_business_advisor_prompt(recommended_business: str, sector: str) -> st
 # Endpoints
 # ──────────────────────────────────────────────
 
+@app.api_route("/", methods=["GET", "HEAD"])
+def root():
+    return {
+        "status": "ok",
+        "service": "BuildBusinessLK AI Service",
+        "health": "/health",
+        "docs": "/docs",
+    }
+
+
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health():
     provider = os.getenv("LLM_PROVIDER", "groq" if os.getenv("GROQ_API_KEY") else "ollama")
@@ -865,3 +875,10 @@ def generate_email_endpoint(body: EmailGenerationRequest):
     except Exception as e:
         logger.error(f"Email generation endpoint error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False)
