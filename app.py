@@ -145,10 +145,10 @@ class WebsiteCopyBody(BaseModel):
 
 
 class AdGenerationBody(BaseModel):
-    prompt: str
+    prompt: Optional[str] = ""
     idea: Optional[str] = None
-    tone: Optional[str] = None
-    platform: Optional[str] = None
+    tone: Optional[str] = "professional"
+    platform: Optional[str] = "instagram"
     website: Optional[str] = None
     businessProfile: Optional[dict] = None
     userProfile: Optional[dict] = None
@@ -831,31 +831,119 @@ def website_copy(body: WebsiteCopyBody):
 @app.post("/ad-generate")
 def generate_ad(body: AdGenerationBody):
     """
-    Generates multi-platform SME marketing copy.
+    Generates structured SME social media marketing content (Instagram-focused)
+    including caption, headline, callToAction, hashtags, and image prompt.
     """
     try:
-        business = json.dumps(body.businessProfile or {}, ensure_ascii=False, indent=2)
-        user = json.dumps(body.userProfile or {}, ensure_ascii=False, indent=2)
+        bp = body.businessProfile or {}
+        up = body.userProfile or {}
+        business_str = json.dumps(bp, ensure_ascii=False, indent=2)
+        user_str = json.dumps(up, ensure_ascii=False, indent=2)
 
-        prompt = ChatPromptTemplate.from_messages([
-            (
-                "system",
-                """You are an expert Sri Lankan SME marketing assistant and advertising copywriter.
-Write ready-to-post advertisement copy for Facebook, Instagram, and WhatsApp tailored to the Sri Lankan market.""",
-            ),
-            (
-                "human",
-                """Business profile (JSON):\n{business}\n\nUser profile (JSON):\n{user}\n\nCampaign brief:\n{prompt}""",
-            ),
+        platform = (body.platform or "instagram").lower().strip()
+        tone = (body.tone or "professional").strip()
+        user_prompt = (body.prompt or body.idea or "").strip()
+
+        business_name = bp.get("businessName") or bp.get("name") or "our business"
+        sector = bp.get("sector") or "agri-business"
+        goals = bp.get("marketingGoals") or bp.get("goals") or "grow brand awareness and sales"
+        target_market = bp.get("targetMarket") or "local and export buyers"
+
+        system_instruction = f"""You are an expert social media copywriter and marketing strategist specializing in Sri Lankan SMEs (especially in coconut, kithul, palmyrah, and agriculture value chains).
+Your task is to write ready-to-post, high-converting social media marketing content tailored for {platform.upper()} with a {tone.upper()} tone.
+
+RULES:
+1. Ground the post strictly in the provided business facts and products.
+2. DO NOT invent fake awards, fake certifications (e.g. claiming USDA Organic unless listed in products), fake customer reviews, or unverified statistics.
+3. Keep the caption authentic, engaging, and well-structured with natural emojis.
+4. Include a crisp headline/hook, a compelling caption, an actionable Call to Action (CTA), and 5-10 relevant hashtags.
+5. Provide a photorealistic, clean commercial photography prompt in 'imagePrompt' that visually represents the product/business for AI image generation (e.g., warm natural lighting, clean studio or artisanal setting, negative space, no text in image).
+6. Return ONLY a single valid JSON object. Do not include markdown code block ticks, explanations, or introductory text.
+
+REQUIRED JSON FORMAT:
+{{{{
+  "platform": "{platform}",
+  "headline": "<short attention-grabbing hook>",
+  "caption": "<complete ready-to-post caption with appropriate emojis and paragraph spacing>",
+  "callToAction": "<clear call to action>",
+  "hashtags": ["#tag1", "#tag2", "#tag3"],
+  "imagePrompt": "<detailed photorealistic visual description for product/brand photography>"
+}}}}"""
+
+        brief_text = user_prompt if user_prompt else f"Create a high-impact marketing post promoting {business_name} ({sector}) to reach {target_market} and achieve: {goals}."
+
+        prompt_template = ChatPromptTemplate.from_messages([
+            ("system", system_instruction),
+            ("human", "Business Context (JSON):\n{business}\n\nUser Profile (JSON):\n{user}\n\nMarketing Goal / Prompt:\n{brief}\n\nGenerate the JSON marketing post:")
         ])
 
-        llm = get_llm(temperature=0.5)
-        chain = prompt | llm | StrOutputParser()
-        result = chain.invoke({"business": business, "user": user, "prompt": body.prompt})
-        return {"generatedAds": result}
+        llm = get_llm(temperature=0.4)
+        chain = prompt_template | llm | StrOutputParser()
+        raw_output = chain.invoke({
+            "business": business_str,
+            "user": user_str,
+            "brief": brief_text,
+        }).strip()
+
+        # Clean markdown code fences if present
+        clean_json_str = re.sub(r"^```(?:json)?\s*", "", raw_output, flags=re.MULTILINE)
+        clean_json_str = re.sub(r"\s*```$", "", clean_json_str, flags=re.MULTILINE).strip()
+
+        try:
+            parsed = json.loads(clean_json_str)
+        except Exception:
+            # Attempt to locate JSON object substring
+            json_match = re.search(r"(\{.*\})", clean_json_str, re.DOTALL)
+            if json_match:
+                try:
+                    parsed = json.loads(json_match.group(1))
+                except Exception:
+                    parsed = {}
+            else:
+                parsed = {}
+
+        headline = str(parsed.get("headline") or f"Discover Quality from {business_name}").strip()
+        caption = str(parsed.get("caption") or f"Proudly presenting authentic {sector} products from {business_name}. Crafted with care and delivered with pride.").strip()
+        cta = str(parsed.get("callToAction") or f"Connect with {business_name} today to learn more!").strip()
+        
+        hashtags = parsed.get("hashtags")
+        if not isinstance(hashtags, list) or not hashtags:
+            hashtags = [f"#{re.sub(r'[^a-zA-Z0-9]', '', business_name)}", f"#{sector.capitalize()}", "#SriLankanProducts", "#SME", "#CeylonQuality"]
+        hashtags = [f"#{tag.lstrip('#')}" for tag in hashtags if tag]
+
+        image_prompt = str(parsed.get("imagePrompt") or f"Premium commercial product photography for {business_name}, {sector} products from Sri Lanka, artisanal setting, soft natural lighting, high resolution, minimalist commercial advertisement").strip()
+
+        # Build combined formatted text for legacy callers
+        hashtag_str = " ".join(hashtags)
+        formatted_ads = f"{headline}\n\n{caption}\n\n👉 {cta}\n\n{hashtag_str}"
+
+        return {
+            "success": True,
+            "platform": platform,
+            "headline": headline,
+            "caption": caption,
+            "callToAction": cta,
+            "hashtags": hashtags,
+            "imagePrompt": image_prompt,
+            "generatedAds": formatted_ads,
+        }
     except Exception as e:
         logger.error(f"Ad generation error: {e}", exc_info=True)
-        return {"success": False, "error": str(e)}
+        fallback_headline = "Grow Your Business with Authentic Sri Lankan Quality"
+        fallback_caption = "Explore authentic products crafted with pride. Connect with us to discover how we deliver trusted quality."
+        fallback_cta = "Contact us today for inquiries!"
+        fallback_tags = ["#SriLankanBusiness", "#CeylonQuality", "#SME"]
+        return {
+            "success": False,
+            "error": str(e),
+            "platform": "instagram",
+            "headline": fallback_headline,
+            "caption": fallback_caption,
+            "callToAction": fallback_cta,
+            "hashtags": fallback_tags,
+            "imagePrompt": "Commercial studio photography of authentic Sri Lankan agricultural product on rustic wood table with natural lighting",
+            "generatedAds": f"{fallback_headline}\n\n{fallback_caption}\n\n👉 {fallback_cta}\n\n{' '.join(fallback_tags)}",
+        }
 
 
 @app.post("/email-generate", response_model=EmailGenerationResponse)
